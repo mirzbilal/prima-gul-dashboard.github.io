@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Prima Gul · complete system</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    /* ----- ORAL GLOW EXACT PALETTE ----- */
+    :root {
+      --primary: #7367f0;
+      --primary-dark: #5e50ee;
+      --primary-light: #a59bf8;
+      --secondary: #28c76f;
+      --secondary-dark: #1e9e56;
+      --danger: #ea5455;
+      --warning: #ff9f43;
+      --info: #00cfe8;
+      --dark: #1e1e2d;
+      --dark-light: #2d2d3f;
+      --light: #f8f8f8;
+      --border: #ebe9f1;
+      --text-primary: #1e1e2d;
+      --text-secondary: #6e6b7b;
+      --gradient-primary: linear-gradient(135deg, #7367f0 0%, #9e95f5 100%);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fafbfc;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 32px;
+    }
+
+    /* ----- LOGIN PAGE STYLES ----- */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #7367f0 0%, #9e95f5 100%);
+      padding: 20px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo {
+      width: 70px;
+      height: 70px;
+      background: var(--gradient-primary);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      color: white;
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .login-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .login-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .input-field input {
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .input-field input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(115,103,240,0.1);
+    }
+
+    .login-btn {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 8px;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(115,103,240,0.3);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    /* dashboard initially hidden */
+    #dashboardApp {
+      display: none;
+    }
+
+    /* ----- HEADER (same as oral glow) ----- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 16px 28px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: var(--gradient-primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .brand-badge {
+      background: var(--gradient-primary);
+      color: white;
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .brand-badge i { margin-right: 6px; }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 10px rgba(115,103,240,0.2);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(115,103,240,0.3); }
+
+    .btn-danger { background: var(--danger); color: white; border: none; }
+    .btn-logout { background: var(--dark-light); color: white; border: none; }
+
+    /* KPI cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      margin-bottom: 26px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 22px;
+      border-radius: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--gradient-primary);
+    }
+
+    .stat-card:nth-child(1)::before { background: var(--gradient-primary); }
+    .stat-card:nth-child(2)::before { background: linear-gradient(135deg, #28c76f 0%, #5adf8a 100%); }
+    .stat-card:nth-child(3)::before { background: linear-gradient(135deg, #ff9f43 0%, #ffb976 100%); }
+    .stat-card:nth-child(4)::before { background: linear-gradient(135deg, #00cfe8 0%, #53e2f5 100%); }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .stat-header h3 {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;
+    }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .stat-card:nth-child(1) .stat-icon { background: rgba(115,103,240,0.12); color: var(--primary); }
+    .stat-card:nth-child(2) .stat-icon { background: rgba(40,199,111,0.12); color: var(--secondary); }
+    .stat-card:nth-child(3) .stat-icon { background: rgba(255,159,67,0.12); color: var(--warning); }
+    .stat-card:nth-child(4) .stat-icon { background: rgba(0,207,232,0.12); color: var(--info); }
+
+    .stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); }
+    .stat-label { font-size: 11px; color: var(--text-secondary); }
+
+    /* input section */
+    .input-section {
+      background: white;
+      padding: 24px 28px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 18px; font-weight: 700; margin-bottom: 22px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title i { color: var(--primary); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .input-group {
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .input-group label {
+      font-size: 11px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; display: flex; align-items: center; gap: 5px;
+    }
+    .input-group input, .input-group textarea {
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 13px;
+      background: #fafbfc;
+    }
+    .input-group input:focus, .input-group textarea:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(115,103,240,0.1);
+      background: white;
+    }
+
+    .action-buttons { display: flex; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
+
+    /* table */
+    .table-container {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 26px;
+    }
+
+    .table-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .table-header h3 i { color: var(--primary); }
+
+    .table-filters input {
+      padding: 10px 20px; border: 1px solid var(--border); border-radius: 10px;
+      width: 240px; background: #fafbfc;
+    }
+
+    .table-wrapper { overflow-x: auto; max-height: 440px; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1450px; }
+    thead { background: #fafbfc; position: sticky; top: 0; }
+    th {
+      padding: 14px 12px; font-size: 11px; font-weight: 600;
+      color: var(--text-secondary); text-transform: uppercase; text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+    td { padding: 14px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: #fafbfc; }
+
+    .action-btn {
+      padding: 5px 12px; border-radius: 8px; border: none; font-size: 11px;
+      font-weight: 600; background: #e8f0fe; color: var(--primary); cursor: pointer; margin-right: 5px;
+    }
+    .action-btn.delete { background: #fee; color: var(--danger); }
+
+    .notes-badge {
+      background: #f1f0f8; padding: 4px 12px; border-radius: 30px;
+      font-size: 11px; display: inline-flex; align-items: center; gap: 6px; color: var(--primary);
+    }
+
+    /* chart */
+    .chart-section {
+      background: white; border-radius: 20px; border: 1px solid var(--border);
+      padding: 24px; margin-top: 20px;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+    .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+    .chart-wrapper { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
+    .chart-container { width: 280px; height: 280px; flex-shrink: 0; }
+    .chart-stats { flex: 1; display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .stat-item { background: #fafbfc; padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
+
+    /* modal */
+    .modal {
+      display: none; position: fixed; z-index: 2000; left: 0; top: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+    }
+    .modal-content {
+      background: white; max-width: 720px; margin: 40px auto; border-radius: 24px;
+      padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; }
+    .close-modal { font-size: 28px; cursor: pointer; color: var(--text-secondary); }
+    .modal-form-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; }
+    .modal-input-group.full { grid-column: span 2; }
+    .modal-input-group input, .modal-input-group textarea {
+      border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 100%;
+      background: #fafbfc;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">PG</div>
+        <h1>Prima Gul</h1>
+        <p>Financial Intelligence System</p>
+      </div>
+      <div class="login-form">
+        <div class="input-field">
+          <label><i class="far fa-user"></i> Username</label>
+          <input type="text" id="username" placeholder="admin" value="admin">
+        </div>
+        <div class="input-field">
+          <label><i class="fas fa-lock"></i> Password</label>
+          <input type="password" id="password" placeholder="••••••••" value="password">
+        </div>
+        <button class="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+      </div>
+      <div class="login-footer">
+        <p>demo: admin / password</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (hidden until login) -->
+  <div id="dashboardApp">
+    <div class="container">
+      <!-- header with logout -->
+      <div class="header">
+        <div class="logo-section">
+          <div class="brand-icon">PG</div>
+          <span class="brand-badge"><i class="fas fa-chart-line"></i> Prima Gul · financial</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel" style="color:var(--primary);"></i> Export</button>
+          <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="card-grid">
+        <div class="stat-card"><div class="stat-header"><h3>Total Debit</h3><div class="stat-icon"><i class="fas fa-arrow-up"></i></div></div><div class="stat-value" id="totalDebit">Rs 0</div><div class="stat-label">Outgoing</div></div>
+        <div class="stat-card"><div class="stat-header"><h3>Total Credit</h3><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div><div class="stat-value" id="totalCredit">Rs 0</div><div class="stat-label">Incoming</div></div>
+        <div class="stat-card"><div class="stat-header"><h3>Total Expenses</h3><div class="stat-icon"><i class="fas fa-receipt"></i></div></div><div class="stat-value" id="totalExpenses">Rs 0</div><div class="stat-label">Operational</div></div>
+        <div class="stat-card"><div class="stat-header"><h3>Net Balance</h3><div class="stat-icon"><i class="fas fa-wallet"></i></div></div><div class="stat-value" id="balance">Rs 0</div><div class="stat-label">Available</div></div>
+      </div>
+
+      <!-- input form (14 entities) -->
+      <div class="input-section">
+        <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
+        <div class="form-grid">
+          <div class="input-group"><label><i class="far fa-calendar"></i> Date</label><input type="date" id="date"></div>
+          <div class="input-group"><label><i class="fas fa-arrow-up" style="color:#28c76f;"></i> Debit</label><input type="number" id="debit" value="0"></div>
+          <div class="input-group"><label><i class="fas fa-arrow-down" style="color:#ea5455;"></i> Credit</label><input type="number" id="credit" value="0"></div>
+
+          <!-- 14 entities -->
+          <div class="input-group"><label>🏭 Factory</label><input type="number" id="factory" value="0"></div>
+          <div class="input-group"><label>⛽ Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
+          <div class="input-group"><label>🚗 Car Fuel</label><input type="number" id="carFuel" value="0"></div>
+          <div class="input-group"><label>🧾 Hasnain</label><input type="number" id="hasnain" value="0"></div>
+          <div class="input-group"><label>🍽️ Guest Food</label><input type="number" id="guestFood" value="0"></div>
+          <div class="input-group"><label>🍲 Food</label><input type="number" id="food" value="0"></div>
+          <div class="input-group"><label>💰 Salaries</label><input type="number" id="salaries" value="0"></div>
+          <div class="input-group"><label>⏩ Advance</label><input type="number" id="advance" value="0"></div>
+          <div class="input-group"><label>📄 Bills</label><input type="number" id="bills" value="0"></div>
+          <div class="input-group"><label>➕ Extra</label><input type="number" id="extra" value="0"></div>
+          <div class="input-group"><label>🤲 Charity</label><input type="number" id="charity" value="0"></div>
+          <div class="input-group"><label>🔧 Maintenance</label><input type="number" id="maintenance" value="0"></div>
+          <div class="input-group"><label>👤 Shahzad</label><input type="number" id="shahzad" value="0"></div>
+          <div class="input-group"><label>📱 Online Ads</label><input type="number" id="onlineAds" value="0"></div>
+
+          <div class="input-group" style="grid-column: span 2;"><label><i class="far fa-sticky-note"></i> Notes</label><textarea id="notes" rows="2" placeholder="Add details..."></textarea></div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary" onclick="addEntry()"><i class="fas fa-save"></i> Save</button>
+          <div style="display: flex; gap: 10px;">
+            <input type="date" id="deleteDate" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border);">
+            <button class="btn btn-danger" onclick="deleteByDate()"><i class="fas fa-trash-alt"></i> Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- transaction table -->
+      <div class="table-container">
+        <div class="table-header">
+          <h3><i class="fas fa-history"></i> Transaction History</h3>
+          <div class="table-filters"><input type="text" id="searchInput" placeholder="Search..." onkeyup="filterTable()"></div>
+        </div>
+        <div class="table-wrapper">
+          <table id="transactionTable">
+            <thead><tr>
+              <th>Date</th><th>Debit</th><th>Credit</th><th>Factory</th><th>BikeFuel</th><th>CarFuel</th><th>Hasnain</th><th>GuestFd</th><th>Food</th><th>Salaries</th>
+              <th>Advance</th><th>Bills</th><th>Extra</th><th>Charity</th><th>Maint</th><th>Shahzad</th><th>OnlineAds</th><th>Notes</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- chart section -->
+      <div class="chart-section">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-pie"></i> Expense Distribution</h3>
+          <div class="chart-legend" id="chartLegend"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div class="chart-container"><canvas id="expenseChart"></canvas></div>
+          <div class="chart-stats" id="chartStats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- edit modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header"><h2><i class="fas fa-edit" style="color:var(--warning);"></i> Edit Transaction</h2><span class="close-modal" onclick="closeEditModal()">&times;</span></div>
+        <div class="modal-form-grid" id="editModalFields"></div>
+        <div style="display:flex; gap:14px; justify-content:flex-end; margin-top:26px;">
+          <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+          <button class="btn" onclick="closeEditModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----- GLOBAL VARIABLES -----
+    const ENTITY_KEYS = [
+      'factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries',
+      'advance','bills','extra','charity','maintenance','shahzad','onlineAds'
+    ];
+
+    let data = [];
+    let chart;
+    let currentEditIndex = -1;
+
+    // ----- LOGIN FUNCTION -----
+    function handleLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      // simple demo authentication
+      if (username === 'admin' && password === 'password') {
+        // load dashboard data
+        loadData();
+        // show dashboard, hide login
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardApp').style.display = 'block';
+      } else {
+        alert('Invalid credentials (use admin/password)');
+      }
+    }
+
+    function logout() {
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('dashboardApp').style.display = 'none';
+      // optional: clear sensitive data
+    }
+
+    // ----- DATA PERSISTENCE (per user/session, but we use localStorage) -----
+    function loadData() {
+      const stored = localStorage.getItem('primaGulComplete');
+      if (stored) {
+        data = JSON.parse(stored);
+      } else {
+        // seed with sample data
+        const today = new Date().toISOString().split('T')[0];
+        let sample = { date: today, debit: 50000, credit: 200000, notes: 'Startup capital' };
+        ENTITY_KEYS.forEach(k => sample[k] = k === 'salaries' ? 85000 : (k === 'factory' ? 42000 : 0));
+        data.push(sample);
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+      }
+      render();
+    }
+
+    function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
+
+    // ----- RENDER DASHBOARD -----
+    function render() {
+      const tbody = document.getElementById('tableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const totals = { debit:0, credit:0 };
+      ENTITY_KEYS.forEach(k => totals[k] = 0);
+
+      const sorted = [...data].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+      sorted.forEach((entry) => {
+        const originalIndex = data.findIndex(d => 
+          d.date === entry.date && d.debit === entry.debit && d.credit === entry.credit &&
+          ENTITY_KEYS.every(k => d[k] === entry[k]) && d.notes === entry.notes
+        );
+
+        totals.debit += entry.debit || 0;
+        totals.credit += entry.credit || 0;
+        ENTITY_KEYS.forEach(k => totals[k] += (entry[k] || 0));
+
+        const formattedDate = new Date(entry.date).toLocaleDateString('en-PK', { year:'numeric', month:'short', day:'numeric' });
+
+        let row = `<tr><td>${formattedDate}</td>`;
+        row += `<td>${entry.debit ? formatPKR(entry.debit) : '-'}</td><td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>`;
+        ENTITY_KEYS.forEach(k => row += `<td>${entry[k] ? formatPKR(entry[k]) : '-'}</td>`);
+        row += `<td>${entry.notes ? `<span class="notes-badge"><i class="far fa-sticky-note"></i> note</span>` : '-'}</td>`;
+        row += `<td><button class="action-btn" onclick="openEditModal(${originalIndex})"><i class="fas-edit"></i>Edit</button> <button class="action-btn delete" onclick="deleteRow(${originalIndex})"><i class="fas-trash-alt"></i>Del</button></td></tr>`;
+        tbody.innerHTML += row;
+      });
+
+      let totalExp = ENTITY_KEYS.reduce((acc,k) => acc + (totals[k]||0), 0);
+      let balance = totals.credit - totals.debit - totalExp;
+
+      document.getElementById('totalDebit').innerText = formatPKR(totals.debit);
+      document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
+      document.getElementById('totalExpenses').innerText = formatPKR(totalExp);
+      document.getElementById('balance').innerText = (balance < 0 ? '-Rs ' : 'Rs ') + Math.abs(balance).toLocaleString('en-PK');
+
+      updateChart(totals);
+    }
+
+    function updateChart(totals) {
+      const values = ENTITY_KEYS.map(k => totals[k] || 0);
+      const total = values.reduce((a,b)=>a+b,0);
+      const colors = ['#7367f0','#ff9f43','#28c76f','#ea5455','#00cfe8','#7367f0','#ff9f43','#28c76f','#ea5455','#00cfe8','#7367f0','#ff9f43','#28c76f','#ea5455'];
+
+      let legendHtml = '', statsHtml = '';
+      ENTITY_KEYS.forEach((k, i) => {
+        let val = totals[k]||0;
+        let percent = total>0 ? (val/total*100).toFixed(1) : 0;
+        legendHtml += `<div class="legend-item"><span class="legend-color" style="background:${colors[i]}"></span>${k}</div>`;
+        statsHtml += `<div class="stat-item"><div style="display:flex; gap:6px;"><span class="legend-color" style="background:${colors[i]}"></span> ${k}</div><div><strong>${formatPKR(val)}</strong> <span style="color:var(--text-secondary);">(${percent}%)</span></div></div>`;
+      });
+      document.getElementById('chartLegend').innerHTML = legendHtml;
+      document.getElementById('chartStats').innerHTML = statsHtml;
+
+      if (chart) chart.destroy();
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ENTITY_KEYS, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, borderRadius: 6 }] },
+        options: { cutout:'65%', plugins: { legend: { display:false }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatPKR(ctx.raw)} (${((ctx.raw/total)*100).toFixed(1)}%)` } } } }
+      });
+    }
+
+    // ----- CRUD OPERATIONS -----
+    function addEntry() {
+      const date = document.getElementById('date').value;
+      if (!date) { alert('Please select a date'); return; }
+
+      let entry = { date, debit: +document.getElementById('debit').value || 0, credit: +document.getElementById('credit').value || 0, notes: document.getElementById('notes').value || '' };
+      ENTITY_KEYS.forEach(k => entry[k] = +document.getElementById(k).value || 0);
+
+      data.push(entry);
+      localStorage.setItem('primaGulComplete', JSON.stringify(data));
+
+      // reset form
+      document.getElementById('date').value = '';
+      document.getElementById('debit').value = 0;
+      document.getElementById('credit').value = 0;
+      ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
+      document.getElementById('notes').value = '';
+
+      render();
+    }
+
+    function deleteByDate() {
+      const delDate = document.getElementById('deleteDate').value;
+      if (!delDate) return alert('Pick a date');
+      if (confirm(`Delete all from ${delDate}?`)) {
+        data = data.filter(e => e.date !== delDate);
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        render();
+      }
+    }
+
+    function deleteRow(index) {
+      if (confirm('Delete this entry?')) {
+        data.splice(index, 1);
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        render();
+      }
+    }
+
+    function openEditModal(index) {
+      currentEditIndex = index;
+      const e = data[index];
+      let html = `<div class="modal-input-group full"><label>Date</label><input type="date" id="editDate" value="${e.date}" readonly></div>`;
+      html += `<div class="modal-input-group"><label>Debit</label><input type="number" id="editDebit" value="${e.debit||0}"></div>`;
+      html += `<div class="modal-input-group"><label>Credit</label><input type="number" id="editCredit" value="${e.credit||0}"></div>`;
+      ENTITY_KEYS.forEach(k => { html += `<div class="modal-input-group"><label>${k}</label><input type="number" id="edit_${k}" value="${e[k]||0}"></div>`; });
+      html += `<div class="modal-input-group full"><label>Notes</label><textarea id="editNotes" rows="2">${e.notes||''}</textarea></div>`;
+      document.getElementById('editModalFields').innerHTML = html;
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeEditModal() { document.getElementById('editModal').style.display = 'none'; currentEditIndex = -1; }
+
+    function saveEdit() {
+      if (currentEditIndex === -1) return;
+      let updated = {
+        date: document.getElementById('editDate').value,
+        debit: +document.getElementById('editDebit').value || 0,
+        credit: +document.getElementById('editCredit').value || 0,
+        notes: document.getElementById('editNotes').value || ''
+      };
+      ENTITY_KEYS.forEach(k => updated[k] = +document.getElementById(`edit_${k}`).value || 0);
+      data[currentEditIndex] = updated;
+      localStorage.setItem('primaGulComplete', JSON.stringify(data));
+      closeEditModal();
+      render();
+    }
+
+    function filterTable() {
+      const term = document.getElementById('searchInput').value.toLowerCase();
+      const rows = document.querySelectorAll('#tableBody tr');
+      rows.forEach(r => { r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none'; });
+    }
+
+    function downloadExcel() {
+      const excelData = data.map(e => {
+        let flat = { Date: e.date, Debit: e.debit, Credit: e.credit };
+        ENTITY_KEYS.forEach(k => flat[k] = e[k] || 0);
+        flat.Notes = e.notes || '';
+        return flat;
+      });
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'PrimaGul');
+      XLSX.writeFile(wb, `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // make functions global for onclick
+    window.handleLogin = handleLogin;
+    window.logout = logout;
+    window.addEntry = addEntry;
+    window.deleteByDate = deleteByDate;
+    window.deleteRow = deleteRow;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.saveEdit = saveEdit;
+    window.filterTable = filterTable;
+    window.downloadExcel = downloadExcel;
+    window.onclick = (e) => { if (e.target.classList.contains('modal')) closeEditModal(); };
+  </script>
+</body>
+</html>
