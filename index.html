@@ -14,6 +14,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* Your existing CSS here - keep it the same */
     :root {
       --primary: #7367f0;
       --primary-dark: #5e50ee;
@@ -533,61 +534,62 @@
 
   <script>
     // ============================================
-    // SUPABASE CONFIGURATION - YOUR CREDENTIALS
+    // SINGLE SCRIPT SECTION - NO DUPLICATES
     // ============================================
+    
+    // Supabase Configuration - ONLY ONCE
     const SUPABASE_URL = 'https://oktfdaheerpamjbirlyn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdGZkYWhlZXJwYW1qYmlybHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEyMTQsImV4cCI6MjA4ODkwNzIxNH0.WPf_ub0MCazqPDf77SemD-k_-Rn0PXAo3dkFwR-jtAQ';
     
+    // Initialize Supabase - ONLY ONCE
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // ============================================
     // Variables
-    // ============================================
     const ENTITY_KEYS = [
-      'factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries',
-      'advance','bills','extra','charity','maintenance','shahzad','onlineAds'
+      'factory', 'bikeFuel', 'carFuel', 'hasnain', 'guestFood', 'food', 'salaries',
+      'advance', 'bills', 'extra', 'charity', 'maintenance', 'shahzad', 'onlineAds'
     ];
     
     let data = [];
     let chart;
 
     // ============================================
-    // Login Function - FIXED
+    // LOGIN FUNCTION - DEFINED ONCE
     // ============================================
-    window.handleLogin = async function() {
-      console.log('Login clicked'); // Debug log
+    window.handleLogin = function() {
+      console.log('Login clicked');
       
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
-      // Simple hardcoded check
       if (username === 'PrimaGul' && password === 'itsprimagul2026') {
         console.log('Login successful');
         
-        // Hide login, show dashboard
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboardApp').style.display = 'block';
-        
-        // Set login flag
         localStorage.setItem('primaGulLoggedIn', 'true');
         
-        // Initialize database connection
-        await checkConnection();
-        await loadFromDatabase();
+        // Initialize database
+        setTimeout(() => {
+          checkConnection();
+          loadFromDatabase();
+        }, 100);
       } else {
         alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
       }
     };
 
     // ============================================
-    // Database Functions
+    // DATABASE FUNCTIONS
     // ============================================
-    
     async function checkConnection() {
       try {
-        const { error } = await supabase.from('transactions').select('count', { count: 'exact', head: true });
+        const { error } = await supabase
+          .from('transactions')
+          .select('count', { count: 'exact', head: true });
+          
         if (!error) {
-          document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected to Database</span>';
+          document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected</span>';
           document.getElementById('dbStatus').className = 'db-status connected';
           return true;
         } else {
@@ -595,7 +597,7 @@
         }
       } catch (error) {
         console.error('Connection error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Connection Failed - Create table first</span>';
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Connection Failed</span>';
         document.getElementById('dbStatus').className = 'db-status error';
         return false;
       }
@@ -610,16 +612,9 @@
           .select('*')
           .order('date', { ascending: false });
         
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
+        if (error) throw error;
         
-        if (transactions && transactions.length > 0) {
-          data = transactions;
-        } else {
-          data = [];
-        }
+        data = transactions || [];
         
         document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected</span>';
         document.getElementById('dbStatus').className = 'db-status connected';
@@ -627,42 +622,14 @@
         
       } catch (error) {
         console.error('Load error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Load Failed - Check table exists</span>';
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Load Failed</span>';
         document.getElementById('dbStatus').className = 'db-status error';
       }
     }
 
-    async function saveToDatabase(entry) {
-      try {
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Saving...</span>';
-        
-        const { error } = await supabase
-          .from('transactions')
-          .insert([entry]);
-        
-        if (error) {
-          console.error('Supabase insert error:', error);
-          throw error;
-        }
-        
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Saved</span>';
-        document.getElementById('dbStatus').className = 'db-status connected';
-        
-        await loadFromDatabase();
-        return true;
-        
-      } catch (error) {
-        console.error('Save error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Save Failed</span>';
-        document.getElementById('dbStatus').className = 'db-status error';
-        return false;
-      }
-    }
-
     // ============================================
-    // CRUD Operations
+    // CRUD OPERATIONS
     // ============================================
-    
     window.addEntry = async function() {
       const date = document.getElementById('date').value;
       if (!date) { 
@@ -690,29 +657,33 @@
         notes: document.getElementById('notes').value || ''
       };
 
-      await saveToDatabase(entry);
-      
-      // Clear form
-      document.getElementById('date').value = '';
-      document.getElementById('credit').value = 0;
-      ENTITY_KEYS.forEach(k => {
-        const element = document.getElementById(k);
-        if (element) element.value = 0;
-      });
-      document.getElementById('notes').value = '';
+      try {
+        const { error } = await supabase.from('transactions').insert([entry]);
+        if (error) throw error;
+        
+        // Clear form
+        document.getElementById('date').value = '';
+        document.getElementById('credit').value = 0;
+        ENTITY_KEYS.forEach(k => {
+          const el = document.getElementById(k);
+          if (el) el.value = 0;
+        });
+        document.getElementById('notes').value = '';
+        
+        await loadFromDatabase();
+        
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('Save failed: ' + error.message);
+      }
     };
 
     window.deleteRow = async function(id) {
       if (confirm('Delete this transaction?')) {
         try {
-          const { error } = await supabase
-            .from('transactions')
-            .delete()
-            .eq('id', id);
-          
+          const { error } = await supabase.from('transactions').delete().eq('id', id);
           if (error) throw error;
           await loadFromDatabase();
-          
         } catch (error) {
           console.error('Delete error:', error);
           alert('Delete failed: ' + error.message);
@@ -728,14 +699,9 @@
       }
       if (confirm(`Delete all transactions from ${date}?`)) {
         try {
-          const { error } = await supabase
-            .from('transactions')
-            .delete()
-            .eq('date', date);
-          
+          const { error } = await supabase.from('transactions').delete().eq('date', date);
           if (error) throw error;
           await loadFromDatabase();
-          
         } catch (error) {
           console.error('Delete by date error:', error);
           alert('Delete failed: ' + error.message);
@@ -747,10 +713,15 @@
       loadFromDatabase();
     };
 
+    window.logout = function() {
+      localStorage.removeItem('primaGulLoggedIn');
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('dashboardApp').style.display = 'none';
+    };
+
     // ============================================
-    // Render Functions
+    // RENDER FUNCTIONS
     // ============================================
-    
     function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
 
     function render() {
@@ -799,7 +770,7 @@
           <td>${entry.maintenance ? formatPKR(entry.maintenance) : '-'}</td>
           <td>${entry.shahzad ? formatPKR(entry.shahzad) : '-'}</td>
           <td>${entry.online_ads ? formatPKR(entry.online_ads) : '-'}</td>
-          <td>${entry.notes ? `<span class="notes-badge"><i class="far fa-sticky-note"></i> Note</span>` : '-'}</td>
+          <td>${entry.notes ? '<i class="far fa-sticky-note"></i>' : '-'}</td>
           <td>
             <button class="action-btn delete" onclick="deleteRow(${entry.id})"><i class="fas fa-trash-alt"></i> Delete</button>
           </td>
@@ -842,19 +813,8 @@
     }
 
     // ============================================
-    // Logout Function
+    // UTILITY FUNCTIONS
     // ============================================
-    
-    window.logout = function() {
-      localStorage.removeItem('primaGulLoggedIn');
-      document.getElementById('loginPage').style.display = 'flex';
-      document.getElementById('dashboardApp').style.display = 'none';
-    };
-
-    // ============================================
-    // Utility Functions
-    // ============================================
-    
     window.filterTable = function() {
       const term = document.getElementById('searchInput').value.toLowerCase();
       const rows = document.querySelectorAll('#tableBody tr');
