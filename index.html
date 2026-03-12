@@ -14,7 +14,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Your existing CSS here - keep it the same */
     :root {
       --primary: #7367f0;
       --primary-dark: #5e50ee;
@@ -48,7 +47,6 @@
       padding: 24px 32px;
     }
 
-    /* Database Status */
     .db-status {
       background: white;
       padding: 10px 20px;
@@ -68,7 +66,6 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Login Page */
     .login-container {
       min-height: 100vh;
       display: flex;
@@ -416,7 +413,6 @@
   <!-- DASHBOARD -->
   <div id="dashboardApp" style="display: none;">
     <div class="container">
-      <!-- Header with Database Status -->
       <div class="header">
         <div class="logo-section">
           <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" alt="Prima Gul">
@@ -424,53 +420,37 @@
         <div class="header-actions">
           <div class="db-status" id="dbStatus">
             <i class="fas fa-database"></i>
-            <span>Checking connection...</span>
+            <span>Ready</span>
           </div>
-          <button class="btn btn-success" onclick="refreshData()" id="refreshBtn">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
+          <button class="btn btn-success" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
           <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Export</button>
           <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
 
-      <!-- KPI Cards -->
       <div class="card-grid">
         <div class="stat-card">
-          <div class="stat-header">
-            <h3>Total Credit</h3>
-            <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
-          </div>
+          <div class="stat-header"><h3>Total Credit</h3><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div>
           <div class="stat-value" id="totalCredit">Rs 0</div>
           <div class="stat-label">Incoming</div>
         </div>
-        
         <div class="stat-card">
-          <div class="stat-header">
-            <h3>Total Expenses</h3>
-            <div class="stat-icon"><i class="fas fa-receipt"></i></div>
-          </div>
+          <div class="stat-header"><h3>Total Expenses</h3><div class="stat-icon"><i class="fas fa-receipt"></i></div></div>
           <div class="stat-value" id="totalExpenses">Rs 0</div>
           <div class="stat-label">Operational</div>
         </div>
-        
         <div class="stat-card">
-          <div class="stat-header">
-            <h3>Net Balance</h3>
-            <div class="stat-icon"><i class="fas fa-wallet"></i></div>
-          </div>
+          <div class="stat-header"><h3>Net Balance</h3><div class="stat-icon"><i class="fas fa-wallet"></i></div></div>
           <div class="stat-value" id="balance">Rs 0</div>
           <div class="stat-label">Available</div>
         </div>
       </div>
 
-      <!-- Add Transaction Form -->
       <div class="input-section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
         <div class="form-grid">
           <div class="input-group"><label>Date</label><input type="date" id="date"></div>
           <div class="input-group"><label>Credit</label><input type="number" id="credit" value="0"></div>
-          
           <div class="input-group"><label>Factory</label><input type="number" id="factory" value="0"></div>
           <div class="input-group"><label>Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
           <div class="input-group"><label>Car Fuel</label><input type="number" id="carFuel" value="0"></div>
@@ -485,10 +465,8 @@
           <div class="input-group"><label>Maintenance</label><input type="number" id="maintenance" value="0"></div>
           <div class="input-group"><label>Shahzad</label><input type="number" id="shahzad" value="0"></div>
           <div class="input-group"><label>Online Ads</label><input type="number" id="onlineAds" value="0"></div>
-
           <div class="input-group" style="grid-column: span 2;"><label>Notes</label><textarea id="notes" rows="2"></textarea></div>
         </div>
-
         <div class="action-buttons">
           <button class="btn btn-primary" onclick="addEntry()"><i class="fas fa-save"></i> Save Transaction</button>
           <div style="display: flex; gap: 10px;">
@@ -498,7 +476,6 @@
         </div>
       </div>
 
-      <!-- Transactions Table -->
       <div class="table-container">
         <div class="table-header">
           <h3><i class="fas fa-history"></i> Transaction History</h3>
@@ -508,9 +485,9 @@
           <table id="transactionTable">
             <thead>
               <tr>
-                <th>Date</th><th>Credit</th><th>Factory</th><th>Bike Fuel</th><th>Car Fuel</th><th>Hasnain</th>
-                <th>Guest Food</th><th>Food</th><th>Salaries</th><th>Advance</th><th>Bills</th><th>Extra</th>
-                <th>Charity</th><th>Maint</th><th>Shahzad</th><th>Online Ads</th><th>Notes</th><th>Actions</th>
+                <th>Date</th><th>Credit</th><th>Factory</th><th>Bike</th><th>Car</th><th>Hasnain</th>
+                <th>Guest</th><th>Food</th><th>Salaries</th><th>Advance</th><th>Bills</th><th>Extra</th>
+                <th>Charity</th><th>Maint</th><th>Shahzad</th><th>Ads</th><th>Notes</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -518,7 +495,6 @@
         </div>
       </div>
 
-      <!-- Chart Section -->
       <div class="chart-section">
         <div class="chart-header">
           <h3><i class="fas fa-chart-pie"></i> Expense Distribution</h3>
@@ -534,48 +510,38 @@
 
   <script>
     // ============================================
-    // SINGLE SCRIPT SECTION - NO DUPLICATES
+    // SINGLE SCRIPT - NO DUPLICATES
     // ============================================
     
-    // Supabase Configuration - ONLY ONCE
+    // Supabase Configuration
     const SUPABASE_URL = 'https://oktfdaheerpamjbirlyn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdGZkYWhlZXJwYW1qYmlybHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEyMTQsImV4cCI6MjA4ODkwNzIxNH0.WPf_ub0MCazqPDf77SemD-k_-Rn0PXAo3dkFwR-jtAQ';
     
-    // Initialize Supabase - ONLY ONCE
+    // Initialize Supabase
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // Variables
-    const ENTITY_KEYS = [
-      'factory', 'bikeFuel', 'carFuel', 'hasnain', 'guestFood', 'food', 'salaries',
-      'advance', 'bills', 'extra', 'charity', 'maintenance', 'shahzad', 'onlineAds'
-    ];
+    // Constants
+    const ENTITY_KEYS = ['factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries','advance','bills','extra','charity','maintenance','shahzad','onlineAds'];
     
+    // State
     let data = [];
-    let chart;
+    let chart = null;
 
     // ============================================
-    // LOGIN FUNCTION - DEFINED ONCE
+    // LOGIN FUNCTION
     // ============================================
     window.handleLogin = function() {
-      console.log('Login clicked');
-      
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
       if (username === 'PrimaGul' && password === 'itsprimagul2026') {
-        console.log('Login successful');
-        
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboardApp').style.display = 'block';
         localStorage.setItem('primaGulLoggedIn', 'true');
-        
-        // Initialize database
-        setTimeout(() => {
-          checkConnection();
-          loadFromDatabase();
-        }, 100);
+        checkConnection();
+        loadData();
       } else {
-        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
+        alert('Invalid credentials');
       }
     };
 
@@ -584,46 +550,50 @@
     // ============================================
     async function checkConnection() {
       try {
-        const { error } = await supabase
-          .from('transactions')
-          .select('count', { count: 'exact', head: true });
-          
-        if (!error) {
-          document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected</span>';
-          document.getElementById('dbStatus').className = 'db-status connected';
-          return true;
-        } else {
-          throw error;
-        }
-      } catch (error) {
-        console.error('Connection error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Connection Failed</span>';
-        document.getElementById('dbStatus').className = 'db-status error';
+        const { error } = await supabase.from('transactions').select('count', { count: 'exact', head: true });
+        updateStatus(!error ? '✅ Connected' : '❌ Failed', !error);
+      } catch (e) {
+        updateStatus('❌ Connection Error', false);
+      }
+    }
+
+    async function loadData() {
+      try {
+        updateStatus('📡 Loading...', 'syncing');
+        const { data: transactions, error } = await supabase.from('transactions').select('*').order('date', { ascending: false });
+        if (error) throw error;
+        data = transactions || [];
+        updateStatus('✅ Connected', true);
+        render();
+      } catch (e) {
+        updateStatus('❌ Load Failed', false);
+      }
+    }
+
+    async function saveData(entry) {
+      try {
+        updateStatus('📤 Saving...', 'syncing');
+        const { error } = await supabase.from('transactions').insert([entry]);
+        if (error) throw error;
+        await loadData();
+        return true;
+      } catch (e) {
+        updateStatus('❌ Save Failed', false);
         return false;
       }
     }
 
-    async function loadFromDatabase() {
-      try {
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Loading...</span>';
-        
-        const { data: transactions, error } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('date', { ascending: false });
-        
-        if (error) throw error;
-        
-        data = transactions || [];
-        
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected</span>';
-        document.getElementById('dbStatus').className = 'db-status connected';
-        render();
-        
-      } catch (error) {
-        console.error('Load error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Load Failed</span>';
-        document.getElementById('dbStatus').className = 'db-status error';
+    function updateStatus(text, isConnected) {
+      const el = document.getElementById('dbStatus');
+      if (isConnected === 'syncing') {
+        el.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> <span>${text}</span>`;
+        el.className = 'db-status syncing';
+      } else if (isConnected) {
+        el.innerHTML = `<i class="fas fa-database"></i> <span>${text}</span>`;
+        el.className = 'db-status connected';
+      } else {
+        el.innerHTML = `<i class="fas fa-database"></i> <span>${text}</span>`;
+        el.className = 'db-status error';
       }
     }
 
@@ -632,86 +602,61 @@
     // ============================================
     window.addEntry = async function() {
       const date = document.getElementById('date').value;
-      if (!date) { 
-        alert('Please select a date'); 
-        return; 
-      }
+      if (!date) return alert('Select a date');
 
-      const entry = { 
+      const entry = {
         date,
-        credit: parseFloat(document.getElementById('credit').value) || 0,
-        factory: parseFloat(document.getElementById('factory').value) || 0,
-        bike_fuel: parseFloat(document.getElementById('bikeFuel').value) || 0,
-        car_fuel: parseFloat(document.getElementById('carFuel').value) || 0,
-        hasnain: parseFloat(document.getElementById('hasnain').value) || 0,
-        guest_food: parseFloat(document.getElementById('guestFood').value) || 0,
-        food: parseFloat(document.getElementById('food').value) || 0,
-        salaries: parseFloat(document.getElementById('salaries').value) || 0,
-        advance: parseFloat(document.getElementById('advance').value) || 0,
-        bills: parseFloat(document.getElementById('bills').value) || 0,
-        extra: parseFloat(document.getElementById('extra').value) || 0,
-        charity: parseFloat(document.getElementById('charity').value) || 0,
-        maintenance: parseFloat(document.getElementById('maintenance').value) || 0,
-        shahzad: parseFloat(document.getElementById('shahzad').value) || 0,
-        online_ads: parseFloat(document.getElementById('onlineAds').value) || 0,
+        credit: +document.getElementById('credit').value || 0,
+        factory: +document.getElementById('factory').value || 0,
+        bike_fuel: +document.getElementById('bikeFuel').value || 0,
+        car_fuel: +document.getElementById('carFuel').value || 0,
+        hasnain: +document.getElementById('hasnain').value || 0,
+        guest_food: +document.getElementById('guestFood').value || 0,
+        food: +document.getElementById('food').value || 0,
+        salaries: +document.getElementById('salaries').value || 0,
+        advance: +document.getElementById('advance').value || 0,
+        bills: +document.getElementById('bills').value || 0,
+        extra: +document.getElementById('extra').value || 0,
+        charity: +document.getElementById('charity').value || 0,
+        maintenance: +document.getElementById('maintenance').value || 0,
+        shahzad: +document.getElementById('shahzad').value || 0,
+        online_ads: +document.getElementById('onlineAds').value || 0,
         notes: document.getElementById('notes').value || ''
       };
 
-      try {
-        const { error } = await supabase.from('transactions').insert([entry]);
-        if (error) throw error;
-        
-        // Clear form
+      if (await saveData(entry)) {
         document.getElementById('date').value = '';
         document.getElementById('credit').value = 0;
-        ENTITY_KEYS.forEach(k => {
-          const el = document.getElementById(k);
-          if (el) el.value = 0;
-        });
+        ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
         document.getElementById('notes').value = '';
-        
-        await loadFromDatabase();
-        
-      } catch (error) {
-        console.error('Save error:', error);
-        alert('Save failed: ' + error.message);
       }
     };
 
     window.deleteRow = async function(id) {
-      if (confirm('Delete this transaction?')) {
-        try {
-          const { error } = await supabase.from('transactions').delete().eq('id', id);
-          if (error) throw error;
-          await loadFromDatabase();
-        } catch (error) {
-          console.error('Delete error:', error);
-          alert('Delete failed: ' + error.message);
-        }
+      if (!confirm('Delete?')) return;
+      try {
+        updateStatus('📤 Deleting...', 'syncing');
+        await supabase.from('transactions').delete().eq('id', id);
+        await loadData();
+      } catch (e) {
+        updateStatus('❌ Delete Failed', false);
       }
     };
 
     window.deleteByDate = async function() {
       const date = document.getElementById('deleteDate').value;
-      if (!date) { 
-        alert('Select a date'); 
-        return; 
-      }
-      if (confirm(`Delete all transactions from ${date}?`)) {
-        try {
-          const { error } = await supabase.from('transactions').delete().eq('date', date);
-          if (error) throw error;
-          await loadFromDatabase();
-        } catch (error) {
-          console.error('Delete by date error:', error);
-          alert('Delete failed: ' + error.message);
-        }
+      if (!date) return alert('Select date');
+      if (!confirm(`Delete all from ${date}?`)) return;
+      try {
+        updateStatus('📤 Deleting...', 'syncing');
+        await supabase.from('transactions').delete().eq('date', date);
+        await loadData();
+      } catch (e) {
+        updateStatus('❌ Delete Failed', false);
       }
     };
 
-    window.refreshData = function() {
-      loadFromDatabase();
-    };
+    window.refreshData = loadData;
 
     window.logout = function() {
       localStorage.removeItem('primaGulLoggedIn');
@@ -749,114 +694,93 @@
         totals.shahzad += entry.shahzad || 0;
         totals.onlineAds += entry.online_ads || 0;
 
-        const formattedDate = new Date(entry.date).toLocaleDateString('en-PK', { 
-          year: 'numeric', month: 'short', day: 'numeric' 
-        });
-
-        let row = `<tr>
-          <td>${formattedDate}</td>
-          <td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>
-          <td>${entry.factory ? formatPKR(entry.factory) : '-'}</td>
-          <td>${entry.bike_fuel ? formatPKR(entry.bike_fuel) : '-'}</td>
-          <td>${entry.car_fuel ? formatPKR(entry.car_fuel) : '-'}</td>
-          <td>${entry.hasnain ? formatPKR(entry.hasnain) : '-'}</td>
-          <td>${entry.guest_food ? formatPKR(entry.guest_food) : '-'}</td>
-          <td>${entry.food ? formatPKR(entry.food) : '-'}</td>
-          <td>${entry.salaries ? formatPKR(entry.salaries) : '-'}</td>
-          <td>${entry.advance ? formatPKR(entry.advance) : '-'}</td>
-          <td>${entry.bills ? formatPKR(entry.bills) : '-'}</td>
-          <td>${entry.extra ? formatPKR(entry.extra) : '-'}</td>
-          <td>${entry.charity ? formatPKR(entry.charity) : '-'}</td>
-          <td>${entry.maintenance ? formatPKR(entry.maintenance) : '-'}</td>
-          <td>${entry.shahzad ? formatPKR(entry.shahzad) : '-'}</td>
-          <td>${entry.online_ads ? formatPKR(entry.online_ads) : '-'}</td>
-          <td>${entry.notes ? '<i class="far fa-sticky-note"></i>' : '-'}</td>
-          <td>
-            <button class="action-btn delete" onclick="deleteRow(${entry.id})"><i class="fas fa-trash-alt"></i> Delete</button>
-          </td>
-        </tr>`;
+        const row = `
+          <tr>
+            <td>${new Date(entry.date).toLocaleDateString()}</td>
+            <td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>
+            <td>${entry.factory ? formatPKR(entry.factory) : '-'}</td>
+            <td>${entry.bike_fuel ? formatPKR(entry.bike_fuel) : '-'}</td>
+            <td>${entry.car_fuel ? formatPKR(entry.car_fuel) : '-'}</td>
+            <td>${entry.hasnain ? formatPKR(entry.hasnain) : '-'}</td>
+            <td>${entry.guest_food ? formatPKR(entry.guest_food) : '-'}</td>
+            <td>${entry.food ? formatPKR(entry.food) : '-'}</td>
+            <td>${entry.salaries ? formatPKR(entry.salaries) : '-'}</td>
+            <td>${entry.advance ? formatPKR(entry.advance) : '-'}</td>
+            <td>${entry.bills ? formatPKR(entry.bills) : '-'}</td>
+            <td>${entry.extra ? formatPKR(entry.extra) : '-'}</td>
+            <td>${entry.charity ? formatPKR(entry.charity) : '-'}</td>
+            <td>${entry.maintenance ? formatPKR(entry.maintenance) : '-'}</td>
+            <td>${entry.shahzad ? formatPKR(entry.shahzad) : '-'}</td>
+            <td>${entry.online_ads ? formatPKR(entry.online_ads) : '-'}</td>
+            <td>${entry.notes ? '📝' : '-'}</td>
+            <td><button class="action-btn delete" onclick="deleteRow(${entry.id})">Delete</button></td>
+          </tr>
+        `;
         tbody.innerHTML += row;
       });
 
-      let totalExp = ENTITY_KEYS.reduce((acc, k) => acc + (totals[k] || 0), 0);
-      let balance = totals.credit - totalExp;
+      const totalExp = ENTITY_KEYS.reduce((acc, k) => acc + (totals[k] || 0), 0);
+      const balance = totals.credit - totalExp;
 
       document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
       document.getElementById('totalExpenses').innerText = formatPKR(totalExp);
       document.getElementById('balance').innerText = (balance < 0 ? '-Rs ' : 'Rs ') + Math.abs(balance).toLocaleString('en-PK');
-
+      
       updateChart(totals);
     }
 
     function updateChart(totals) {
       const values = ENTITY_KEYS.map(k => totals[k] || 0);
-      const total = values.reduce((a,b)=>a+b,0);
+      const total = values.reduce((a,b) => a+b, 0);
       const colors = ['#7367f0','#ff9f43','#28c76f','#ea5455','#00cfe8','#7367f0','#ff9f43','#28c76f','#ea5455','#00cfe8','#7367f0','#ff9f43','#28c76f','#ea5455'];
 
-      let legendHtml = '', statsHtml = '';
+      let legend = '', stats = '';
       ENTITY_KEYS.forEach((k, i) => {
-        let val = totals[k]||0;
-        let percent = total>0 ? (val/total*100).toFixed(1) : 0;
-        legendHtml += `<div class="legend-item"><span class="legend-color" style="background:${colors[i]}"></span>${k}</div>`;
-        statsHtml += `<div class="stat-item"><div style="display:flex; gap:6px;"><span class="legend-color" style="background:${colors[i]}"></span> ${k}</div><div><strong>${formatPKR(val)}</strong> <span style="color:var(--text-secondary);">(${percent}%)</span></div></div>`;
+        const val = totals[k] || 0;
+        const pct = total > 0 ? (val/total*100).toFixed(1) : 0;
+        legend += `<div class="legend-item"><span class="legend-color" style="background:${colors[i]}"></span>${k}</div>`;
+        stats += `<div class="stat-item"><div>${k}</div><div><strong>${formatPKR(val)}</strong> (${pct}%)</div></div>`;
       });
-      document.getElementById('chartLegend').innerHTML = legendHtml;
-      document.getElementById('chartStats').innerHTML = statsHtml;
+      
+      document.getElementById('chartLegend').innerHTML = legend;
+      document.getElementById('chartStats').innerHTML = stats;
 
       if (chart) chart.destroy();
       const ctx = document.getElementById('expenseChart').getContext('2d');
       chart = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: ENTITY_KEYS, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, borderRadius: 6 }] },
-        options: { cutout:'65%', plugins: { legend: { display:false }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatPKR(ctx.raw)} (${((ctx.raw/total)*100).toFixed(1)}%)` } } } }
+        data: { labels: ENTITY_KEYS, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
+        options: { cutout: '65%', plugins: { legend: { display: false } } }
       });
     }
 
     // ============================================
-    // UTILITY FUNCTIONS
+    // UTILITIES
     // ============================================
     window.filterTable = function() {
       const term = document.getElementById('searchInput').value.toLowerCase();
-      const rows = document.querySelectorAll('#tableBody tr');
-      rows.forEach(r => { r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none'; });
+      document.querySelectorAll('#tableBody tr').forEach(r => {
+        r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
+      });
     };
 
     window.downloadExcel = function() {
-      const excelData = data.map(e => ({
-        Date: e.date,
-        Credit: e.credit,
-        Factory: e.factory,
-        BikeFuel: e.bike_fuel,
-        CarFuel: e.car_fuel,
-        Hasnain: e.hasnain,
-        GuestFood: e.guest_food,
-        Food: e.food,
-        Salaries: e.salaries,
-        Advance: e.advance,
-        Bills: e.bills,
-        Extra: e.extra,
-        Charity: e.charity,
-        Maintenance: e.maintenance,
-        Shahzad: e.shahzad,
-        OnlineAds: e.online_ads,
-        Notes: e.notes
-      }));
-      
-      const ws = XLSX.utils.json_to_sheet(excelData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'PrimaGul');
-      XLSX.writeFile(wb, `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
+      const ws = XLSX.utils.json_to_sheet(data.map(e => ({
+        Date: e.date, Credit: e.credit, Factory: e.factory, BikeFuel: e.bike_fuel,
+        CarFuel: e.car_fuel, Hasnain: e.hasnain, GuestFood: e.guest_food, Food: e.food,
+        Salaries: e.salaries, Advance: e.advance, Bills: e.bills, Extra: e.extra,
+        Charity: e.charity, Maintenance: e.maintenance, Shahzad: e.shahzad,
+        OnlineAds: e.online_ads, Notes: e.notes
+      })));
+      XLSX.writeFile(XLSX.utils.book_new().then(b => { XLSX.utils.book_append_sheet(b, ws, 'PrimaGul'); return b; }), `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
     };
 
-    // Check login on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      if (localStorage.getItem('primaGulLoggedIn') === 'true') {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('dashboardApp').style.display = 'block';
-        checkConnection();
-        loadFromDatabase();
-      }
-    });
+    // Auto-login check
+    if (localStorage.getItem('primaGulLoggedIn') === 'true') {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('dashboardApp').style.display = 'block';
+      setTimeout(() => { checkConnection(); loadData(); }, 100);
+    }
   </script>
 </body>
 </html>
