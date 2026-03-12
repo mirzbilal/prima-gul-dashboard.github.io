@@ -423,10 +423,10 @@
         <div class="header-actions">
           <div class="db-status" id="dbStatus">
             <i class="fas fa-database"></i>
-            <span>Connecting...</span>
+            <span>Checking connection...</span>
           </div>
-          <button class="btn btn-success" onclick="saveData()" id="saveBtn">
-            <i class="fas fa-save"></i> Save Data
+          <button class="btn btn-success" onclick="refreshData()" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Refresh
           </button>
           <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Export</button>
           <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -548,16 +548,36 @@
       'advance','bills','extra','charity','maintenance','shahzad','onlineAds'
     ];
     
-    // Map HTML field IDs to database column names
-    const FIELD_TO_DB = {
-      bikeFuel: 'bike_fuel',
-      carFuel: 'car_fuel',
-      guestFood: 'guest_food',
-      onlineAds: 'online_ads'
-    };
-    
     let data = [];
     let chart;
+
+    // ============================================
+    // Login Function - FIXED
+    // ============================================
+    window.handleLogin = async function() {
+      console.log('Login clicked'); // Debug log
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      // Simple hardcoded check
+      if (username === 'PrimaGul' && password === 'itsprimagul2026') {
+        console.log('Login successful');
+        
+        // Hide login, show dashboard
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardApp').style.display = 'block';
+        
+        // Set login flag
+        localStorage.setItem('primaGulLoggedIn', 'true');
+        
+        // Initialize database connection
+        await checkConnection();
+        await loadFromDatabase();
+      } else {
+        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
+      }
+    };
 
     // ============================================
     // Database Functions
@@ -565,7 +585,7 @@
     
     async function checkConnection() {
       try {
-        const { error } = await supabase.from('transactions').select('count').limit(1);
+        const { error } = await supabase.from('transactions').select('count', { count: 'exact', head: true });
         if (!error) {
           document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected to Database</span>';
           document.getElementById('dbStatus').className = 'db-status connected';
@@ -574,9 +594,9 @@
           throw error;
         }
       } catch (error) {
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Connection Failed</span>';
-        document.getElementById('dbStatus').className = 'db-status error';
         console.error('Connection error:', error);
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Connection Failed - Create table first</span>';
+        document.getElementById('dbStatus').className = 'db-status error';
         return false;
       }
     }
@@ -590,13 +610,15 @@
           .select('*')
           .order('date', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
         
         if (transactions && transactions.length > 0) {
           data = transactions;
         } else {
-          // Create sample data if no transactions exist
-          await createSampleData();
+          data = [];
         }
         
         document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected</span>';
@@ -605,7 +627,7 @@
         
       } catch (error) {
         console.error('Load error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Load Failed</span>';
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Load Failed - Check table exists</span>';
         document.getElementById('dbStatus').className = 'db-status error';
       }
     }
@@ -614,37 +636,19 @@
       try {
         document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Saving...</span>';
         
-        // Convert field names to database column names
-        const dbEntry = {
-          date: entry.date,
-          credit: entry.credit,
-          factory: entry.factory,
-          bike_fuel: entry.bikeFuel,
-          car_fuel: entry.carFuel,
-          hasnain: entry.hasnain,
-          guest_food: entry.guestFood,
-          food: entry.food,
-          salaries: entry.salaries,
-          advance: entry.advance,
-          bills: entry.bills,
-          extra: entry.extra,
-          charity: entry.charity,
-          maintenance: entry.maintenance,
-          shahzad: entry.shahzad,
-          online_ads: entry.onlineAds,
-          notes: entry.notes
-        };
-        
         const { error } = await supabase
           .from('transactions')
-          .insert([dbEntry]);
+          .insert([entry]);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase insert error:', error);
+          throw error;
+        }
         
         document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Saved</span>';
         document.getElementById('dbStatus').className = 'db-status connected';
         
-        await loadFromDatabase(); // Reload data
+        await loadFromDatabase();
         return true;
         
       } catch (error) {
@@ -655,102 +659,34 @@
       }
     }
 
-    async function deleteFromDatabase(id) {
-      try {
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Deleting...</span>';
-        
-        const { error } = await supabase
-          .from('transactions')
-          .delete()
-          .eq('id', id);
-        
-        if (error) throw error;
-        
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Deleted</span>';
-        document.getElementById('dbStatus').className = 'db-status connected';
-        
-        await loadFromDatabase();
-        
-      } catch (error) {
-        console.error('Delete error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Delete Failed</span>';
-        document.getElementById('dbStatus').className = 'db-status error';
-      }
-    }
-
-    async function deleteByDateFromDatabase(date) {
-      try {
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Deleting...</span>';
-        
-        const { error } = await supabase
-          .from('transactions')
-          .delete()
-          .eq('date', date);
-        
-        if (error) throw error;
-        
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Deleted</span>';
-        document.getElementById('dbStatus').className = 'db-status connected';
-        
-        await loadFromDatabase();
-        
-      } catch (error) {
-        console.error('Delete by date error:', error);
-        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Delete Failed</span>';
-        document.getElementById('dbStatus').className = 'db-status error';
-      }
-    }
-
-    async function createSampleData() {
-      const today = new Date().toISOString().split('T')[0];
-      const sample = {
-        date: today,
-        credit: 250000,
-        factory: 45000,
-        bikeFuel: 8000,
-        carFuel: 12000,
-        hasnain: 15000,
-        guestFood: 5000,
-        food: 18000,
-        salaries: 85000,
-        advance: 10000,
-        bills: 22000,
-        extra: 6000,
-        charity: 3000,
-        maintenance: 9000,
-        shahzad: 12000,
-        onlineAds: 25000,
-        notes: 'Sample data - Edit or delete this'
-      };
-      
-      await saveToDatabase(sample);
-    }
-
     // ============================================
     // CRUD Operations
     // ============================================
     
-    async function addEntry() {
+    window.addEntry = async function() {
       const date = document.getElementById('date').value;
-      if (!date) { alert('Please select a date'); return; }
+      if (!date) { 
+        alert('Please select a date'); 
+        return; 
+      }
 
       const entry = { 
         date,
-        credit: +document.getElementById('credit').value || 0,
-        factory: +document.getElementById('factory').value || 0,
-        bikeFuel: +document.getElementById('bikeFuel').value || 0,
-        carFuel: +document.getElementById('carFuel').value || 0,
-        hasnain: +document.getElementById('hasnain').value || 0,
-        guestFood: +document.getElementById('guestFood').value || 0,
-        food: +document.getElementById('food').value || 0,
-        salaries: +document.getElementById('salaries').value || 0,
-        advance: +document.getElementById('advance').value || 0,
-        bills: +document.getElementById('bills').value || 0,
-        extra: +document.getElementById('extra').value || 0,
-        charity: +document.getElementById('charity').value || 0,
-        maintenance: +document.getElementById('maintenance').value || 0,
-        shahzad: +document.getElementById('shahzad').value || 0,
-        onlineAds: +document.getElementById('onlineAds').value || 0,
+        credit: parseFloat(document.getElementById('credit').value) || 0,
+        factory: parseFloat(document.getElementById('factory').value) || 0,
+        bike_fuel: parseFloat(document.getElementById('bikeFuel').value) || 0,
+        car_fuel: parseFloat(document.getElementById('carFuel').value) || 0,
+        hasnain: parseFloat(document.getElementById('hasnain').value) || 0,
+        guest_food: parseFloat(document.getElementById('guestFood').value) || 0,
+        food: parseFloat(document.getElementById('food').value) || 0,
+        salaries: parseFloat(document.getElementById('salaries').value) || 0,
+        advance: parseFloat(document.getElementById('advance').value) || 0,
+        bills: parseFloat(document.getElementById('bills').value) || 0,
+        extra: parseFloat(document.getElementById('extra').value) || 0,
+        charity: parseFloat(document.getElementById('charity').value) || 0,
+        maintenance: parseFloat(document.getElementById('maintenance').value) || 0,
+        shahzad: parseFloat(document.getElementById('shahzad').value) || 0,
+        online_ads: parseFloat(document.getElementById('onlineAds').value) || 0,
         notes: document.getElementById('notes').value || ''
       };
 
@@ -764,25 +700,52 @@
         if (element) element.value = 0;
       });
       document.getElementById('notes').value = '';
-    }
+    };
 
-    async function deleteRow(id) {
+    window.deleteRow = async function(id) {
       if (confirm('Delete this transaction?')) {
-        await deleteFromDatabase(id);
+        try {
+          const { error } = await supabase
+            .from('transactions')
+            .delete()
+            .eq('id', id);
+          
+          if (error) throw error;
+          await loadFromDatabase();
+          
+        } catch (error) {
+          console.error('Delete error:', error);
+          alert('Delete failed: ' + error.message);
+        }
       }
-    }
+    };
 
-    async function deleteByDate() {
+    window.deleteByDate = async function() {
       const date = document.getElementById('deleteDate').value;
-      if (!date) { alert('Select a date'); return; }
-      if (confirm(`Delete all transactions from ${date}?`)) {
-        await deleteByDateFromDatabase(date);
+      if (!date) { 
+        alert('Select a date'); 
+        return; 
       }
-    }
+      if (confirm(`Delete all transactions from ${date}?`)) {
+        try {
+          const { error } = await supabase
+            .from('transactions')
+            .delete()
+            .eq('date', date);
+          
+          if (error) throw error;
+          await loadFromDatabase();
+          
+        } catch (error) {
+          console.error('Delete by date error:', error);
+          alert('Delete failed: ' + error.message);
+        }
+      }
+    };
 
-    function saveData() {
-      loadFromDatabase(); // Refresh from database
-    }
+    window.refreshData = function() {
+      loadFromDatabase();
+    };
 
     // ============================================
     // Render Functions
@@ -879,37 +842,26 @@
     }
 
     // ============================================
-    // Login Functions
+    // Logout Function
     // ============================================
     
-    function handleLogin() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      
-      if (username === 'PrimaGul' && password === 'itsprimagul2026') {
-        localStorage.setItem('primaGulLoggedIn', 'true');
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('dashboardApp').style.display = 'block';
-        checkConnection();
-        loadFromDatabase();
-      } else {
-        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
-      }
-    }
-
-    function logout() {
+    window.logout = function() {
       localStorage.removeItem('primaGulLoggedIn');
       document.getElementById('loginPage').style.display = 'flex';
       document.getElementById('dashboardApp').style.display = 'none';
-    }
+    };
 
-    function filterTable() {
+    // ============================================
+    // Utility Functions
+    // ============================================
+    
+    window.filterTable = function() {
       const term = document.getElementById('searchInput').value.toLowerCase();
       const rows = document.querySelectorAll('#tableBody tr');
       rows.forEach(r => { r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none'; });
-    }
+    };
 
-    function downloadExcel() {
+    window.downloadExcel = function() {
       const excelData = data.map(e => ({
         Date: e.date,
         Credit: e.credit,
@@ -934,7 +886,7 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'PrimaGul');
       XLSX.writeFile(wb, `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
+    };
 
     // Check login on page load
     document.addEventListener('DOMContentLoaded', function() {
@@ -945,17 +897,6 @@
         loadFromDatabase();
       }
     });
-
-    // Make functions global
-    window.handleLogin = handleLogin;
-    window.logout = logout;
-    window.addEntry = addEntry;
-    window.deleteRow = deleteRow;
-    window.deleteByDate = deleteByDate;
-    window.filterTable = filterTable;
-    window.downloadExcel = downloadExcel;
-    window.saveData = loadFromDatabase;
-    window.checkConnection = checkConnection;
   </script>
 </body>
 </html>
