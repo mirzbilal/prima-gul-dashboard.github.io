@@ -12,7 +12,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
-    /* ----- ORAL GLOW EXACT PALETTE ----- */
     :root {
       --primary: #7367f0;
       --primary-dark: #5e50ee;
@@ -76,25 +75,9 @@
       margin-bottom: 32px;
     }
 
-    .login-logo {
-      width: 70px;
-      height: 70px;
-      background: var(--gradient-primary);
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      color: white;
-      font-size: 32px;
-      font-weight: 700;
-    }
-
-    .login-header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 6px;
+    .login-header img {
+      max-width: 150px;
+      margin-bottom: 16px;
     }
 
     .login-header p {
@@ -160,12 +143,11 @@
       font-size: 13px;
     }
 
-    /* dashboard initially hidden */
+    /* ----- DASHBOARD STYLES ----- */
     #dashboardApp {
       display: none;
     }
 
-    /* ----- HEADER (same as oral glow) ----- */
     .header {
       display: flex;
       justify-content: space-between;
@@ -184,28 +166,10 @@
       gap: 16px;
     }
 
-    .brand-icon {
-      width: 44px; height: 44px;
-      background: var(--gradient-primary);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 22px;
-      font-weight: 600;
+    .logo-section img {
+      max-height: 40px;
+      width: auto;
     }
-
-    .brand-badge {
-      background: var(--gradient-primary);
-      color: white;
-      padding: 6px 18px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .brand-badge i { margin-right: 6px; }
 
     .btn {
       padding: 10px 22px;
@@ -384,59 +348,175 @@
     .chart-stats { flex: 1; display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
     .stat-item { background: #fafbfc; padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
 
-    /* modal */
+    /* ----- IMPROVED EDIT MODAL STYLES ----- */
     .modal {
-      display: none; position: fixed; z-index: 2000; left: 0; top: 0;
-      width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+      display: none; 
+      position: fixed; 
+      z-index: 2000; 
+      left: 0; 
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.5); 
+      backdrop-filter: blur(5px);
+      overflow-y: auto;
+      padding: 20px;
     }
+
     .modal-content {
-      background: white; max-width: 720px; margin: 40px auto; border-radius: 24px;
-      padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+      background: white; 
+      max-width: 900px; 
+      margin: 30px auto; 
+      border-radius: 24px;
+      padding: 32px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+      position: relative;
+      width: 95%;
     }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; }
-    .close-modal { font-size: 28px; cursor: pointer; color: var(--text-secondary); }
-    .modal-form-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; }
-    .modal-input-group.full { grid-column: span 2; }
-    .modal-input-group input, .modal-input-group textarea {
-      border: 1px solid var(--border); border-radius: 12px; padding: 12px; width: 100%;
+
+    .modal-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    
+    .modal-header h2 { 
+      color: var(--primary); 
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .close-modal { 
+      font-size: 32px; 
+      cursor: pointer; 
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    
+    .close-modal:hover {
+      color: var(--danger);
+    }
+
+    /* Edit modal grid layout - 4 columns */
+    .modal-form-grid { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .modal-input-group { 
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .modal-input-group.full { 
+      grid-column: span 4; 
+    }
+    
+    .modal-input-group label { 
+      font-size: 12px; 
+      font-weight: 600; 
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+    
+    .modal-input-group input, 
+    .modal-input-group textarea {
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 12px 16px; 
+      width: 100%;
       background: #fafbfc;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    
+    .modal-input-group input:focus,
+    .modal-input-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(115,103,240,0.1);
+      background: white;
+    }
+
+    /* Category headers in edit modal */
+    .modal-category-header {
+      grid-column: span 4;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 8px;
+      margin-bottom: 4px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Date display in edit modal */
+    .modal-date-display {
+      background: #f0f4f8;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .modal-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .modal-input-group.full {
+        grid-column: span 2;
+      }
     }
   </style>
 </head>
 <body>
   <!-- LOGIN PAGE -->
-  <div id="loginPage" class="login-container">
+  <div id="loginPage" class="login-container" style="display: flex;">
     <div class="login-card">
       <div class="login-header">
-        <div class="login-logo">PG</div>
-        <h1>Prima Gul</h1>
-        <p>Financial Intelligence System</p>
+        <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
+        <p>Finance Manager</p>
       </div>
       <div class="login-form">
         <div class="input-field">
           <label><i class="far fa-user"></i> Username</label>
-          <input type="text" id="username" placeholder="admin" value="admin">
+          <input type="text" id="username" placeholder="PrimaGul" value="PrimaGul">
         </div>
         <div class="input-field">
           <label><i class="fas fa-lock"></i> Password</label>
-          <input type="password" id="password" placeholder="••••••••" value="password">
+          <input type="password" id="password" placeholder="••••••••" value="itsprimagul2026">
         </div>
         <button class="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
       </div>
       <div class="login-footer">
-        <p>demo: admin / password</p>
+        <p>demo: PrimaGul / itsprimagul2026</p>
       </div>
     </div>
   </div>
 
-  <!-- DASHBOARD (hidden until login) -->
-  <div id="dashboardApp">
+  <!-- DASHBOARD -->
+  <div id="dashboardApp" style="display: none;">
     <div class="container">
       <!-- header with logout -->
       <div class="header">
         <div class="logo-section">
-          <div class="brand-icon">PG</div>
-          <span class="brand-badge"><i class="fas fa-chart-line"></i> Prima Gul · financial</span>
+          <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
         </div>
         <div class="header-actions">
           <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel" style="color:var(--primary);"></i> Export</button>
@@ -518,14 +598,25 @@
       </div>
     </div>
 
-    <!-- edit modal -->
+    <!-- IMPROVED EDIT MODAL -->
     <div id="editModal" class="modal">
       <div class="modal-content">
-        <div class="modal-header"><h2><i class="fas fa-edit" style="color:var(--warning);"></i> Edit Transaction</h2><span class="close-modal" onclick="closeEditModal()">&times;</span></div>
-        <div class="modal-form-grid" id="editModalFields"></div>
-        <div style="display:flex; gap:14px; justify-content:flex-end; margin-top:26px;">
-          <button class="btn btn-primary" onclick="saveEdit()">Save</button>
-          <button class="btn" onclick="closeEditModal()">Cancel</button>
+        <div class="modal-header">
+          <h2><i class="fas fa-edit" style="color:var(--primary); margin-right: 10px;"></i> Edit Transaction</h2>
+          <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        </div>
+        
+        <div class="modal-date-display" id="modalDateDisplay" style="margin-bottom: 20px;">
+          Date: <span id="editDateDisplay"></span>
+        </div>
+
+        <div class="modal-form-grid" id="editModalFields">
+          <!-- Fields will be dynamically populated here -->
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="saveEdit()" style="padding: 12px 30px;"><i class="fas fa-save"></i> Save Changes</button>
+          <button class="btn" onclick="closeEditModal()" style="padding: 12px 30px;"><i class="fas fa-times"></i> Cancel</button>
         </div>
       </div>
     </div>
@@ -542,38 +633,72 @@
     let chart;
     let currentEditIndex = -1;
 
+    // Check login state on page load - FIXED VERSION
+    document.addEventListener('DOMContentLoaded', function() {
+      const isLoggedIn = localStorage.getItem('primaGulLoggedIn') === 'true';
+      const loginPage = document.getElementById('loginPage');
+      const dashboardApp = document.getElementById('dashboardApp');
+      
+      console.log('Login state:', isLoggedIn); // Debug log
+      
+      if (isLoggedIn) {
+        loginPage.style.display = 'none';
+        dashboardApp.style.display = 'block';
+        loadData();
+      } else {
+        loginPage.style.display = 'flex';
+        dashboardApp.style.display = 'none';
+      }
+    });
+
     // ----- LOGIN FUNCTION -----
     function handleLogin() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      // simple demo authentication
-      if (username === 'admin' && password === 'password') {
-        // load dashboard data
+      
+      if (username === 'PrimaGul' && password === 'itsprimagul2026') {
+        localStorage.setItem('primaGulLoggedIn', 'true');
         loadData();
-        // show dashboard, hide login
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboardApp').style.display = 'block';
       } else {
-        alert('Invalid credentials (use admin/password)');
+        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
       }
     }
 
     function logout() {
+      localStorage.removeItem('primaGulLoggedIn');
       document.getElementById('loginPage').style.display = 'flex';
       document.getElementById('dashboardApp').style.display = 'none';
-      // optional: clear sensitive data
     }
 
-    // ----- DATA PERSISTENCE (per user/session, but we use localStorage) -----
+    // ----- DATA PERSISTENCE -----
     function loadData() {
       const stored = localStorage.getItem('primaGulComplete');
       if (stored) {
         data = JSON.parse(stored);
       } else {
-        // seed with sample data
         const today = new Date().toISOString().split('T')[0];
-        let sample = { date: today, debit: 50000, credit: 200000, notes: 'Startup capital' };
-        ENTITY_KEYS.forEach(k => sample[k] = k === 'salaries' ? 85000 : (k === 'factory' ? 42000 : 0));
+        let sample = { 
+          date: today, 
+          debit: 50000, 
+          credit: 200000, 
+          notes: 'Startup capital',
+          factory: 42000,
+          bikeFuel: 0,
+          carFuel: 0,
+          hasnain: 0,
+          guestFood: 0,
+          food: 0,
+          salaries: 85000,
+          advance: 0,
+          bills: 0,
+          extra: 0,
+          charity: 0,
+          maintenance: 0,
+          shahzad: 0,
+          onlineAds: 52000
+        };
         data.push(sample);
         localStorage.setItem('primaGulComplete', JSON.stringify(data));
       }
@@ -648,12 +773,144 @@
       });
     }
 
+    // ----- IMPROVED EDIT MODAL -----
+    function openEditModal(index) {
+      currentEditIndex = index;
+      const e = data[index];
+      
+      // Set date display
+      document.getElementById('editDateDisplay').innerText = new Date(e.date).toLocaleDateString('en-PK', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+
+      // Build the form with categories
+      let html = `
+        <!-- Debit & Credit -->
+        <div class="modal-input-group">
+          <label>Debit</label>
+          <input type="number" id="editDebit" value="${e.debit || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Credit</label>
+          <input type="number" id="editCredit" value="${e.credit || 0}" step="1000">
+        </div>
+
+        <div class="modal-category-header">Factory & Fuel</div>
+        <div class="modal-input-group">
+          <label>Factory</label>
+          <input type="number" id="edit_factory" value="${e.factory || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Bike Fuel</label>
+          <input type="number" id="edit_bikeFuel" value="${e.bikeFuel || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Car Fuel</label>
+          <input type="number" id="edit_carFuel" value="${e.carFuel || 0}" step="1000">
+        </div>
+
+        <div class="modal-category-header">Personnel</div>
+        <div class="modal-input-group">
+          <label>Hasnain</label>
+          <input type="number" id="edit_hasnain" value="${e.hasnain || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Shahzad</label>
+          <input type="number" id="edit_shahzad" value="${e.shahzad || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Salaries</label>
+          <input type="number" id="edit_salaries" value="${e.salaries || 0}" step="1000">
+        </div>
+
+        <div class="modal-category-header">Food & Dining</div>
+        <div class="modal-input-group">
+          <label>Guest Food</label>
+          <input type="number" id="edit_guestFood" value="${e.guestFood || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Food</label>
+          <input type="number" id="edit_food" value="${e.food || 0}" step="1000">
+        </div>
+
+        <div class="modal-category-header">Operations</div>
+        <div class="modal-input-group">
+          <label>Advance</label>
+          <input type="number" id="edit_advance" value="${e.advance || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Bills</label>
+          <input type="number" id="edit_bills" value="${e.bills || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Extra</label>
+          <input type="number" id="edit_extra" value="${e.extra || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Maintenance</label>
+          <input type="number" id="edit_maintenance" value="${e.maintenance || 0}" step="1000">
+        </div>
+
+        <div class="modal-category-header">Other</div>
+        <div class="modal-input-group">
+          <label>Charity</label>
+          <input type="number" id="edit_charity" value="${e.charity || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Online Ads</label>
+          <input type="number" id="edit_onlineAds" value="${e.onlineAds || 0}" step="1000">
+        </div>
+
+        <div class="modal-input-group full">
+          <label>Notes</label>
+          <textarea id="editNotes" rows="3" placeholder="Add notes...">${e.notes || ''}</textarea>
+        </div>
+      `;
+
+      document.getElementById('editModalFields').innerHTML = html;
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeEditModal() { 
+      document.getElementById('editModal').style.display = 'none'; 
+      currentEditIndex = -1; 
+    }
+
+    function saveEdit() {
+      if (currentEditIndex === -1) return;
+      
+      let updated = {
+        date: data[currentEditIndex].date, // Keep original date
+        debit: +document.getElementById('editDebit').value || 0,
+        credit: +document.getElementById('editCredit').value || 0,
+        notes: document.getElementById('editNotes').value || ''
+      };
+      
+      ENTITY_KEYS.forEach(k => {
+        const input = document.getElementById(`edit_${k}`);
+        updated[k] = input ? +input.value || 0 : 0;
+      });
+
+      data[currentEditIndex] = updated;
+      localStorage.setItem('primaGulComplete', JSON.stringify(data));
+      closeEditModal();
+      render();
+    }
+
     // ----- CRUD OPERATIONS -----
     function addEntry() {
       const date = document.getElementById('date').value;
       if (!date) { alert('Please select a date'); return; }
 
-      let entry = { date, debit: +document.getElementById('debit').value || 0, credit: +document.getElementById('credit').value || 0, notes: document.getElementById('notes').value || '' };
+      let entry = { 
+        date, 
+        debit: +document.getElementById('debit').value || 0, 
+        credit: +document.getElementById('credit').value || 0, 
+        notes: document.getElementById('notes').value || '' 
+      };
+      
       ENTITY_KEYS.forEach(k => entry[k] = +document.getElementById(k).value || 0);
 
       data.push(entry);
@@ -687,35 +944,6 @@
       }
     }
 
-    function openEditModal(index) {
-      currentEditIndex = index;
-      const e = data[index];
-      let html = `<div class="modal-input-group full"><label>Date</label><input type="date" id="editDate" value="${e.date}" readonly></div>`;
-      html += `<div class="modal-input-group"><label>Debit</label><input type="number" id="editDebit" value="${e.debit||0}"></div>`;
-      html += `<div class="modal-input-group"><label>Credit</label><input type="number" id="editCredit" value="${e.credit||0}"></div>`;
-      ENTITY_KEYS.forEach(k => { html += `<div class="modal-input-group"><label>${k}</label><input type="number" id="edit_${k}" value="${e[k]||0}"></div>`; });
-      html += `<div class="modal-input-group full"><label>Notes</label><textarea id="editNotes" rows="2">${e.notes||''}</textarea></div>`;
-      document.getElementById('editModalFields').innerHTML = html;
-      document.getElementById('editModal').style.display = 'block';
-    }
-
-    function closeEditModal() { document.getElementById('editModal').style.display = 'none'; currentEditIndex = -1; }
-
-    function saveEdit() {
-      if (currentEditIndex === -1) return;
-      let updated = {
-        date: document.getElementById('editDate').value,
-        debit: +document.getElementById('editDebit').value || 0,
-        credit: +document.getElementById('editCredit').value || 0,
-        notes: document.getElementById('editNotes').value || ''
-      };
-      ENTITY_KEYS.forEach(k => updated[k] = +document.getElementById(`edit_${k}`).value || 0);
-      data[currentEditIndex] = updated;
-      localStorage.setItem('primaGulComplete', JSON.stringify(data));
-      closeEditModal();
-      render();
-    }
-
     function filterTable() {
       const term = document.getElementById('searchInput').value.toLowerCase();
       const rows = document.querySelectorAll('#tableBody tr');
@@ -746,7 +974,10 @@
     window.saveEdit = saveEdit;
     window.filterTable = filterTable;
     window.downloadExcel = downloadExcel;
-    window.onclick = (e) => { if (e.target.classList.contains('modal')) closeEditModal(); };
+    window.onclick = (e) => { 
+      const modal = document.getElementById('editModal');
+      if (e.target === modal) closeEditModal(); 
+    };
   </script>
 </body>
 </html>
