@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Prima Gul · Cloud Sync</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prima Gul · Database Connected</title>
+  
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -45,8 +47,8 @@
       padding: 24px 32px;
     }
 
-    /* Sync Status Bar */
-    .sync-status {
+    /* Database Status */
+    .db-status {
       background: white;
       padding: 10px 20px;
       border-radius: 30px;
@@ -55,66 +57,17 @@
       gap: 10px;
       font-size: 13px;
       border: 1px solid var(--border);
-      margin-bottom: 15px;
     }
-
-    .sync-status.connected i {
-      color: var(--secondary);
-    }
-
-    .sync-status.error i {
-      color: var(--danger);
-    }
-
-    .sync-status.syncing i {
-      color: var(--info);
-      animation: spin 1s linear infinite;
-    }
+    .db-status.connected i { color: var(--secondary); }
+    .db-status.error i { color: var(--danger); }
+    .db-status.syncing i { color: var(--info); animation: spin 1s linear infinite; }
 
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
 
-    /* Tooltip Styles */
-    [data-tooltip] {
-      position: relative;
-      cursor: help;
-    }
-
-    [data-tooltip]:before {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 8px 12px;
-      background: var(--dark);
-      color: white;
-      font-size: 12px;
-      font-weight: 500;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      max-width: 250px;
-      min-width: 150px;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.2s ease;
-      z-index: 1000;
-      pointer-events: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      text-align: left;
-      line-height: 1.4;
-    }
-
-    [data-tooltip]:hover:before {
-      opacity: 1;
-      visibility: visible;
-      bottom: calc(100% + 8px);
-    }
-
-    /* ----- LOGIN PAGE STYLES ----- */
+    /* Login Page */
     .login-container {
       min-height: 100vh;
       display: flex;
@@ -131,12 +84,6 @@
       width: 100%;
       max-width: 420px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      animation: slideIn 0.4s ease;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
 
     .login-header {
@@ -178,7 +125,6 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       font-size: 14px;
-      transition: 0.2s;
     }
 
     .input-field input:focus {
@@ -264,9 +210,15 @@
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(115,103,240,0.3); }
 
+    .btn-success {
+      background: var(--secondary);
+      color: white;
+      border: none;
+    }
+    .btn-success:hover { background: var(--secondary-dark); }
+
     .btn-danger { background: var(--danger); color: white; border: none; }
     .btn-logout { background: var(--dark-light); color: white; border: none; }
-    .btn-sync { background: var(--info); color: white; border: none; }
 
     .card-grid {
       display: grid;
@@ -419,15 +371,7 @@
       gap: 6px;
       color: var(--primary);
       cursor: help;
-      border: 1px solid transparent;
-      transition: all 0.2s;
     }
-    .notes-badge:hover {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-    .notes-badge i { font-size: 11px; }
 
     .chart-section {
       background: white; border-radius: 20px; border: 1px solid var(--border);
@@ -441,142 +385,6 @@
     .chart-container { width: 280px; height: 280px; flex-shrink: 0; }
     .chart-stats { flex: 1; display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
     .stat-item { background: #fafbfc; padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
-
-    .modal {
-      display: none; 
-      position: fixed; 
-      z-index: 2000; 
-      left: 0; 
-      top: 0;
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0,0,0,0.5); 
-      backdrop-filter: blur(5px);
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .modal-content {
-      background: white; 
-      max-width: 900px; 
-      margin: 30px auto; 
-      border-radius: 24px;
-      padding: 32px; 
-      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
-      position: relative;
-      width: 95%;
-    }
-
-    .modal-header { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--border);
-    }
-    
-    .modal-header h2 { 
-      color: var(--primary); 
-      font-size: 24px;
-      font-weight: 700;
-    }
-    
-    .close-modal { 
-      font-size: 32px; 
-      cursor: pointer; 
-      color: var(--text-secondary);
-      transition: color 0.2s;
-    }
-    
-    .close-modal:hover {
-      color: var(--danger);
-    }
-
-    .modal-form-grid { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .modal-input-group { 
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    
-    .modal-input-group.full { 
-      grid-column: span 4; 
-    }
-    
-    .modal-input-group label { 
-      font-size: 12px; 
-      font-weight: 600; 
-      color: var(--text-secondary);
-      text-transform: uppercase;
-    }
-    
-    .modal-input-group input, 
-    .modal-input-group textarea {
-      border: 1px solid var(--border); 
-      border-radius: 12px; 
-      padding: 12px 16px; 
-      width: 100%;
-      background: #fafbfc;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-    
-    .modal-input-group input:focus,
-    .modal-input-group textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(115,103,240,0.1);
-      background: white;
-    }
-
-    .modal-category-header {
-      grid-column: span 4;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--primary);
-      margin-top: 8px;
-      margin-bottom: 4px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 16px;
-      justify-content: flex-end;
-      margin-top: 28px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    .modal-date-display {
-      background: #f0f4f8;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-weight: 600;
-      color: var(--primary);
-      border: 1px solid var(--border);
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .modal-form-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .modal-input-group.full {
-        grid-column: span 2;
-      }
-      .card-grid {
-        grid-template-columns: repeat(1, 1fr);
-      }
-    }
   </style>
 </head>
 <body>
@@ -584,17 +392,17 @@
   <div id="loginPage" class="login-container" style="display: flex;">
     <div class="login-card">
       <div class="login-header">
-        <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
+        <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" alt="Prima Gul">
         <p>Finance Manager</p>
       </div>
       <div class="login-form">
         <div class="input-field">
           <label><i class="far fa-user"></i> Username</label>
-          <input type="text" id="username" placeholder="PrimaGul" value="PrimaGul">
+          <input type="text" id="username" value="PrimaGul">
         </div>
         <div class="input-field">
           <label><i class="fas fa-lock"></i> Password</label>
-          <input type="password" id="password" placeholder="••••••••" value="itsprimagul2026">
+          <input type="password" id="password" value="itsprimagul2026">
         </div>
         <button class="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
       </div>
@@ -607,25 +415,25 @@
   <!-- DASHBOARD -->
   <div id="dashboardApp" style="display: none;">
     <div class="container">
-      <!-- header with logout and sync -->
+      <!-- Header with Database Status -->
       <div class="header">
         <div class="logo-section">
-          <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
+          <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" alt="Prima Gul">
         </div>
         <div class="header-actions">
-          <div class="sync-status connected" id="syncStatus">
-            <i class="fas fa-cloud"></i>
-            <span>Connected</span>
+          <div class="db-status" id="dbStatus">
+            <i class="fas fa-database"></i>
+            <span>Connecting...</span>
           </div>
-          <button class="btn btn-sync" onclick="syncFromCloud()" id="syncBtn">
-            <i class="fas fa-sync-alt"></i> Refresh
+          <button class="btn btn-success" onclick="saveData()" id="saveBtn">
+            <i class="fas fa-save"></i> Save Data
           </button>
-          <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel" style="color:var(--primary);"></i> Export</button>
+          <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Export</button>
           <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
       </div>
 
-      <!-- KPI cards -->
+      <!-- KPI Cards -->
       <div class="card-grid">
         <div class="stat-card">
           <div class="stat-header">
@@ -655,42 +463,41 @@
         </div>
       </div>
 
-      <!-- input form (DEBIT ENTITY COMPLETELY REMOVED) -->
+      <!-- Add Transaction Form -->
       <div class="input-section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
         <div class="form-grid">
-          <div class="input-group"><label><i class="far fa-calendar"></i> Date</label><input type="date" id="date"></div>
-          <div class="input-group"><label><i class="fas fa-arrow-down" style="color:#ea5455;"></i> Credit</label><input type="number" id="credit" value="0"></div>
+          <div class="input-group"><label>Date</label><input type="date" id="date"></div>
+          <div class="input-group"><label>Credit</label><input type="number" id="credit" value="0"></div>
           
-          <!-- 14 entities - Debit field completely removed -->
-          <div class="input-group"><label>🏭 Factory</label><input type="number" id="factory" value="0"></div>
-          <div class="input-group"><label>⛽ Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
-          <div class="input-group"><label>🚗 Car Fuel</label><input type="number" id="carFuel" value="0"></div>
-          <div class="input-group"><label>🧾 Hasnain</label><input type="number" id="hasnain" value="0"></div>
-          <div class="input-group"><label>🍽️ Guest Food</label><input type="number" id="guestFood" value="0"></div>
-          <div class="input-group"><label>🍲 Food</label><input type="number" id="food" value="0"></div>
-          <div class="input-group"><label>💰 Salaries</label><input type="number" id="salaries" value="0"></div>
-          <div class="input-group"><label>⏩ Advance</label><input type="number" id="advance" value="0"></div>
-          <div class="input-group"><label>📄 Bills</label><input type="number" id="bills" value="0"></div>
-          <div class="input-group"><label>➕ Extra</label><input type="number" id="extra" value="0"></div>
-          <div class="input-group"><label>🤲 Charity</label><input type="number" id="charity" value="0"></div>
-          <div class="input-group"><label>🔧 Maintenance</label><input type="number" id="maintenance" value="0"></div>
-          <div class="input-group"><label>👤 Shahzad</label><input type="number" id="shahzad" value="0"></div>
-          <div class="input-group"><label>📱 Online Ads</label><input type="number" id="onlineAds" value="0"></div>
+          <div class="input-group"><label>Factory</label><input type="number" id="factory" value="0"></div>
+          <div class="input-group"><label>Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
+          <div class="input-group"><label>Car Fuel</label><input type="number" id="carFuel" value="0"></div>
+          <div class="input-group"><label>Hasnain</label><input type="number" id="hasnain" value="0"></div>
+          <div class="input-group"><label>Guest Food</label><input type="number" id="guestFood" value="0"></div>
+          <div class="input-group"><label>Food</label><input type="number" id="food" value="0"></div>
+          <div class="input-group"><label>Salaries</label><input type="number" id="salaries" value="0"></div>
+          <div class="input-group"><label>Advance</label><input type="number" id="advance" value="0"></div>
+          <div class="input-group"><label>Bills</label><input type="number" id="bills" value="0"></div>
+          <div class="input-group"><label>Extra</label><input type="number" id="extra" value="0"></div>
+          <div class="input-group"><label>Charity</label><input type="number" id="charity" value="0"></div>
+          <div class="input-group"><label>Maintenance</label><input type="number" id="maintenance" value="0"></div>
+          <div class="input-group"><label>Shahzad</label><input type="number" id="shahzad" value="0"></div>
+          <div class="input-group"><label>Online Ads</label><input type="number" id="onlineAds" value="0"></div>
 
-          <div class="input-group" style="grid-column: span 2;"><label><i class="far fa-sticky-note"></i> Notes</label><textarea id="notes" rows="2" placeholder="Add details..."></textarea></div>
+          <div class="input-group" style="grid-column: span 2;"><label>Notes</label><textarea id="notes" rows="2"></textarea></div>
         </div>
 
         <div class="action-buttons">
-          <button class="btn btn-primary" onclick="addEntry()"><i class="fas fa-save"></i> Save</button>
+          <button class="btn btn-primary" onclick="addEntry()"><i class="fas fa-save"></i> Save Transaction</button>
           <div style="display: flex; gap: 10px;">
             <input type="date" id="deleteDate" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border);">
-            <button class="btn btn-danger" onclick="deleteByDate()"><i class="fas fa-trash-alt"></i> Delete</button>
+            <button class="btn btn-danger" onclick="deleteByDate()"><i class="fas fa-trash-alt"></i> Delete Date</button>
           </div>
         </div>
       </div>
 
-      <!-- transaction table (DEBIT COLUMN REMOVED - table width adjusted) -->
+      <!-- Transactions Table -->
       <div class="table-container">
         <div class="table-header">
           <h3><i class="fas fa-history"></i> Transaction History</h3>
@@ -700,24 +507,9 @@
           <table id="transactionTable">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Credit</th>
-                <th>Factory</th>
-                <th>Bike Fuel</th>
-                <th>Car Fuel</th>
-                <th>Hasnain</th>
-                <th>Guest Food</th>
-                <th>Food</th>
-                <th>Salaries</th>
-                <th>Advance</th>
-                <th>Bills</th>
-                <th>Extra</th>
-                <th>Charity</th>
-                <th>Maint</th>
-                <th>Shahzad</th>
-                <th>Online Ads</th>
-                <th>Notes</th>
-                <th>Actions</th>
+                <th>Date</th><th>Credit</th><th>Factory</th><th>Bike Fuel</th><th>Car Fuel</th><th>Hasnain</th>
+                <th>Guest Food</th><th>Food</th><th>Salaries</th><th>Advance</th><th>Bills</th><th>Extra</th>
+                <th>Charity</th><th>Maint</th><th>Shahzad</th><th>Online Ads</th><th>Notes</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -725,7 +517,7 @@
         </div>
       </div>
 
-      <!-- chart section -->
+      <!-- Chart Section -->
       <div class="chart-section">
         <div class="chart-header">
           <h3><i class="fas fa-chart-pie"></i> Expense Distribution</h3>
@@ -737,123 +529,181 @@
         </div>
       </div>
     </div>
-
-    <!-- edit modal (DEBIT REMOVED) -->
-    <div id="editModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2><i class="fas fa-edit" style="color:var(--primary); margin-right: 10px;"></i> Edit Transaction</h2>
-          <span class="close-modal" onclick="closeEditModal()">&times;</span>
-        </div>
-        
-        <div class="modal-date-display">
-          Date: <span id="editDateDisplay"></span>
-        </div>
-
-        <div class="modal-form-grid" id="editModalFields"></div>
-
-        <div class="modal-actions">
-          <button class="btn btn-primary" onclick="saveEdit()" style="padding: 12px 30px;"><i class="fas fa-save"></i> Save Changes</button>
-          <button class="btn" onclick="closeEditModal()" style="padding: 12px 30px;"><i class="fas fa-times"></i> Cancel</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script>
-    // ----- YOUR JSONBIN TOKEN -----
-    const BIN_ID = '67d3c5b50e3a4f3c7b9a8b2c'; // Replace with your actual bin ID
-    const API_KEY = '$2a$10$dyBf0j7AXlcBXo8lv504veMu68cpXiUHmwaBMuVK7rQpv8t7nFQ/.'; // Your token
-
+    // ============================================
+    // SUPABASE CONFIGURATION - YOUR CREDENTIALS
+    // ============================================
+    const SUPABASE_URL = 'https://oktfdaheerpamjbirlyn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdGZkYWhlZXJwYW1qYmlybHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEyMTQsImV4cCI6MjA4ODkwNzIxNH0.WPf_ub0MCazqPDf77SemD-k_-Rn0PXAo3dkFwR-jtAQ';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ============================================
+    // Variables
+    // ============================================
     const ENTITY_KEYS = [
       'factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries',
       'advance','bills','extra','charity','maintenance','shahzad','onlineAds'
     ];
-
+    
+    // Map HTML field IDs to database column names
+    const FIELD_TO_DB = {
+      bikeFuel: 'bike_fuel',
+      carFuel: 'car_fuel',
+      guestFood: 'guest_food',
+      onlineAds: 'online_ads'
+    };
+    
     let data = [];
     let chart;
-    let currentEditIndex = -1;
 
-    // ----- CLOUD STORAGE WITH YOUR JSONBIN TOKEN -----
-    async function loadFromCloud() {
-      const syncStatus = document.getElementById('syncStatus');
-      const syncBtn = document.getElementById('syncBtn');
-      
+    // ============================================
+    // Database Functions
+    // ============================================
+    
+    async function checkConnection() {
       try {
-        syncStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Connecting to cloud...</span>';
-        syncStatus.className = 'sync-status syncing';
-        syncBtn.disabled = true;
-        
-        // Try to load from JSONBin with your token
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-          method: 'GET',
-          headers: {
-            'X-Master-Key': API_KEY,
-            'X-Bin-Meta': 'false'
-          }
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          if (result && result.data) {
-            data = result.data;
-            syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Cloud connected</span>';
-            syncStatus.className = 'sync-status connected';
-          } else {
-            throw new Error('Invalid data format');
-          }
+        const { error } = await supabase.from('transactions').select('count').limit(1);
+        if (!error) {
+          document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected to Database</span>';
+          document.getElementById('dbStatus').className = 'db-status connected';
+          return true;
         } else {
-          throw new Error('Failed to load from cloud');
+          throw error;
         }
       } catch (error) {
-        console.warn('Cloud error, using localStorage:', error);
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Connection Failed</span>';
+        document.getElementById('dbStatus').className = 'db-status error';
+        console.error('Connection error:', error);
+        return false;
+      }
+    }
+
+    async function loadFromDatabase() {
+      try {
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Loading...</span>';
         
-        // Fallback to localStorage
-        const stored = localStorage.getItem('primaGulCloudData');
-        if (stored) {
-          data = JSON.parse(stored);
-          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline mode</span>';
-          syncStatus.className = 'sync-status error';
+        const { data: transactions, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('date', { ascending: false });
+        
+        if (error) throw error;
+        
+        if (transactions && transactions.length > 0) {
+          data = transactions;
         } else {
-          createSampleData();
-          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline mode</span>';
-          syncStatus.className = 'sync-status error';
+          // Create sample data if no transactions exist
+          await createSampleData();
         }
-      } finally {
-        syncBtn.disabled = false;
+        
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Connected</span>';
+        document.getElementById('dbStatus').className = 'db-status connected';
         render();
-      }
-    }
-
-    async function saveToCloud() {
-      try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY
-          },
-          body: JSON.stringify({ data: data })
-        });
         
-        if (response.ok) {
-          document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Saved to cloud</span>';
-          document.getElementById('syncStatus').className = 'sync-status connected';
-        } else {
-          throw new Error('Cloud save failed');
-        }
       } catch (error) {
-        console.warn('Cloud save failed, saving locally');
-        document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Saved offline</span>';
-        document.getElementById('syncStatus').className = 'sync-status error';
+        console.error('Load error:', error);
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Load Failed</span>';
+        document.getElementById('dbStatus').className = 'db-status error';
       }
-      
-      localStorage.setItem('primaGulCloudData', JSON.stringify(data));
     }
 
-    function createSampleData() {
+    async function saveToDatabase(entry) {
+      try {
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Saving...</span>';
+        
+        // Convert field names to database column names
+        const dbEntry = {
+          date: entry.date,
+          credit: entry.credit,
+          factory: entry.factory,
+          bike_fuel: entry.bikeFuel,
+          car_fuel: entry.carFuel,
+          hasnain: entry.hasnain,
+          guest_food: entry.guestFood,
+          food: entry.food,
+          salaries: entry.salaries,
+          advance: entry.advance,
+          bills: entry.bills,
+          extra: entry.extra,
+          charity: entry.charity,
+          maintenance: entry.maintenance,
+          shahzad: entry.shahzad,
+          online_ads: entry.onlineAds,
+          notes: entry.notes
+        };
+        
+        const { error } = await supabase
+          .from('transactions')
+          .insert([dbEntry]);
+        
+        if (error) throw error;
+        
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Saved</span>';
+        document.getElementById('dbStatus').className = 'db-status connected';
+        
+        await loadFromDatabase(); // Reload data
+        return true;
+        
+      } catch (error) {
+        console.error('Save error:', error);
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Save Failed</span>';
+        document.getElementById('dbStatus').className = 'db-status error';
+        return false;
+      }
+    }
+
+    async function deleteFromDatabase(id) {
+      try {
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Deleting...</span>';
+        
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Deleted</span>';
+        document.getElementById('dbStatus').className = 'db-status connected';
+        
+        await loadFromDatabase();
+        
+      } catch (error) {
+        console.error('Delete error:', error);
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Delete Failed</span>';
+        document.getElementById('dbStatus').className = 'db-status error';
+      }
+    }
+
+    async function deleteByDateFromDatabase(date) {
+      try {
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Deleting...</span>';
+        
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('date', date);
+        
+        if (error) throw error;
+        
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>✅ Deleted</span>';
+        document.getElementById('dbStatus').className = 'db-status connected';
+        
+        await loadFromDatabase();
+        
+      } catch (error) {
+        console.error('Delete by date error:', error);
+        document.getElementById('dbStatus').innerHTML = '<i class="fas fa-database"></i> <span>❌ Delete Failed</span>';
+        document.getElementById('dbStatus').className = 'db-status error';
+      }
+    }
+
+    async function createSampleData() {
       const today = new Date().toISOString().split('T')[0];
-      data = [{
+      const sample = {
         date: today,
         credit: 250000,
         factory: 45000,
@@ -870,92 +720,131 @@
         maintenance: 9000,
         shahzad: 12000,
         onlineAds: 25000,
-        notes: 'Sample data - hover over notes to see full text'
-      }];
-    }
-
-    function syncFromCloud() {
-      loadFromCloud();
-    }
-
-    // ----- LOGIN FUNCTIONS -----
-    document.addEventListener('DOMContentLoaded', function() {
-      const isLoggedIn = localStorage.getItem('primaGulLoggedIn') === 'true';
-      const loginPage = document.getElementById('loginPage');
-      const dashboardApp = document.getElementById('dashboardApp');
+        notes: 'Sample data - Edit or delete this'
+      };
       
-      if (isLoggedIn) {
-        loginPage.style.display = 'none';
-        dashboardApp.style.display = 'block';
-        loadFromCloud();
-      } else {
-        loginPage.style.display = 'flex';
-        dashboardApp.style.display = 'none';
-      }
-    });
+      await saveToDatabase(sample);
+    }
 
-    function handleLogin() {
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+    // ============================================
+    // CRUD Operations
+    // ============================================
+    
+    async function addEntry() {
+      const date = document.getElementById('date').value;
+      if (!date) { alert('Please select a date'); return; }
+
+      const entry = { 
+        date,
+        credit: +document.getElementById('credit').value || 0,
+        factory: +document.getElementById('factory').value || 0,
+        bikeFuel: +document.getElementById('bikeFuel').value || 0,
+        carFuel: +document.getElementById('carFuel').value || 0,
+        hasnain: +document.getElementById('hasnain').value || 0,
+        guestFood: +document.getElementById('guestFood').value || 0,
+        food: +document.getElementById('food').value || 0,
+        salaries: +document.getElementById('salaries').value || 0,
+        advance: +document.getElementById('advance').value || 0,
+        bills: +document.getElementById('bills').value || 0,
+        extra: +document.getElementById('extra').value || 0,
+        charity: +document.getElementById('charity').value || 0,
+        maintenance: +document.getElementById('maintenance').value || 0,
+        shahzad: +document.getElementById('shahzad').value || 0,
+        onlineAds: +document.getElementById('onlineAds').value || 0,
+        notes: document.getElementById('notes').value || ''
+      };
+
+      await saveToDatabase(entry);
       
-      if (username === 'PrimaGul' && password === 'itsprimagul2026') {
-        localStorage.setItem('primaGulLoggedIn', 'true');
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('dashboardApp').style.display = 'block';
-        loadFromCloud();
-      } else {
-        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
+      // Clear form
+      document.getElementById('date').value = '';
+      document.getElementById('credit').value = 0;
+      ENTITY_KEYS.forEach(k => {
+        const element = document.getElementById(k);
+        if (element) element.value = 0;
+      });
+      document.getElementById('notes').value = '';
+    }
+
+    async function deleteRow(id) {
+      if (confirm('Delete this transaction?')) {
+        await deleteFromDatabase(id);
       }
     }
 
-    function logout() {
-      localStorage.removeItem('primaGulLoggedIn');
-      document.getElementById('loginPage').style.display = 'flex';
-      document.getElementById('dashboardApp').style.display = 'none';
+    async function deleteByDate() {
+      const date = document.getElementById('deleteDate').value;
+      if (!date) { alert('Select a date'); return; }
+      if (confirm(`Delete all transactions from ${date}?`)) {
+        await deleteByDateFromDatabase(date);
+      }
     }
 
-    // ----- FORMATTING -----
+    function saveData() {
+      loadFromDatabase(); // Refresh from database
+    }
+
+    // ============================================
+    // Render Functions
+    // ============================================
+    
     function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
 
-    // ----- RENDER DASHBOARD WITH HOVER NOTES -----
     function render() {
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      const totals = { credit:0 };
+      const totals = { credit: 0 };
       ENTITY_KEYS.forEach(k => totals[k] = 0);
 
-      const sorted = [...data].sort((a,b)=>new Date(b.date)-new Date(a.date));
-
-      sorted.forEach((entry) => {
-        const originalIndex = data.findIndex(d => 
-          d.date === entry.date && d.credit === entry.credit &&
-          ENTITY_KEYS.every(k => d[k] === entry[k]) && d.notes === entry.notes
-        );
-
+      data.forEach(entry => {
         totals.credit += entry.credit || 0;
-        ENTITY_KEYS.forEach(k => totals[k] += (entry[k] || 0));
+        totals.factory += entry.factory || 0;
+        totals.bikeFuel += entry.bike_fuel || 0;
+        totals.carFuel += entry.car_fuel || 0;
+        totals.hasnain += entry.hasnain || 0;
+        totals.guestFood += entry.guest_food || 0;
+        totals.food += entry.food || 0;
+        totals.salaries += entry.salaries || 0;
+        totals.advance += entry.advance || 0;
+        totals.bills += entry.bills || 0;
+        totals.extra += entry.extra || 0;
+        totals.charity += entry.charity || 0;
+        totals.maintenance += entry.maintenance || 0;
+        totals.shahzad += entry.shahzad || 0;
+        totals.onlineAds += entry.online_ads || 0;
 
-        const formattedDate = new Date(entry.date).toLocaleDateString('en-PK', { year:'numeric', month:'short', day:'numeric' });
+        const formattedDate = new Date(entry.date).toLocaleDateString('en-PK', { 
+          year: 'numeric', month: 'short', day: 'numeric' 
+        });
 
-        let row = `<tr><td>${formattedDate}</td>`;
-        row += `<td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>`;
-        ENTITY_KEYS.forEach(k => row += `<td>${entry[k] ? formatPKR(entry[k]) : '-'}</td>`);
-        
-        // Notes column with hover tooltip
-        if (entry.notes) {
-          const shortNote = entry.notes.length > 20 ? entry.notes.substring(0, 20) + '...' : entry.notes;
-          row += `<td><span class="notes-badge" data-tooltip="${entry.notes.replace(/"/g, '&quot;')}"><i class="far fa-sticky-note"></i> ${shortNote}</span></td>`;
-        } else {
-          row += `<td>-</td>`;
-        }
-        
-        row += `<td><button class="action-btn" onclick="openEditModal(${originalIndex})"><i class="fas-edit"></i>Edit</button> <button class="action-btn delete" onclick="deleteRow(${originalIndex})"><i class="fas-trash-alt"></i>Del</button></td></tr>`;
+        let row = `<tr>
+          <td>${formattedDate}</td>
+          <td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>
+          <td>${entry.factory ? formatPKR(entry.factory) : '-'}</td>
+          <td>${entry.bike_fuel ? formatPKR(entry.bike_fuel) : '-'}</td>
+          <td>${entry.car_fuel ? formatPKR(entry.car_fuel) : '-'}</td>
+          <td>${entry.hasnain ? formatPKR(entry.hasnain) : '-'}</td>
+          <td>${entry.guest_food ? formatPKR(entry.guest_food) : '-'}</td>
+          <td>${entry.food ? formatPKR(entry.food) : '-'}</td>
+          <td>${entry.salaries ? formatPKR(entry.salaries) : '-'}</td>
+          <td>${entry.advance ? formatPKR(entry.advance) : '-'}</td>
+          <td>${entry.bills ? formatPKR(entry.bills) : '-'}</td>
+          <td>${entry.extra ? formatPKR(entry.extra) : '-'}</td>
+          <td>${entry.charity ? formatPKR(entry.charity) : '-'}</td>
+          <td>${entry.maintenance ? formatPKR(entry.maintenance) : '-'}</td>
+          <td>${entry.shahzad ? formatPKR(entry.shahzad) : '-'}</td>
+          <td>${entry.online_ads ? formatPKR(entry.online_ads) : '-'}</td>
+          <td>${entry.notes ? `<span class="notes-badge"><i class="far fa-sticky-note"></i> Note</span>` : '-'}</td>
+          <td>
+            <button class="action-btn delete" onclick="deleteRow(${entry.id})"><i class="fas fa-trash-alt"></i> Delete</button>
+          </td>
+        </tr>`;
         tbody.innerHTML += row;
       });
 
-      let totalExp = ENTITY_KEYS.reduce((acc,k) => acc + (totals[k]||0), 0);
+      let totalExp = ENTITY_KEYS.reduce((acc, k) => acc + (totals[k] || 0), 0);
       let balance = totals.credit - totalExp;
 
       document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
@@ -989,162 +878,29 @@
       });
     }
 
-    // ----- CRUD OPERATIONS (DEBIT REMOVED) -----
-    async function addEntry() {
-      const date = document.getElementById('date').value;
-      if (!date) { alert('Please select a date'); return; }
-
-      let entry = { 
-        date, 
-        credit: +document.getElementById('credit').value || 0, 
-        notes: document.getElementById('notes').value || '' 
-      };
+    // ============================================
+    // Login Functions
+    // ============================================
+    
+    function handleLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
       
-      ENTITY_KEYS.forEach(k => entry[k] = +document.getElementById(k).value || 0);
-
-      data.push(entry);
-      await saveToCloud();
-      render();
-
-      document.getElementById('date').value = '';
-      document.getElementById('credit').value = 0;
-      ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
-      document.getElementById('notes').value = '';
-    }
-
-    async function deleteByDate() {
-      const delDate = document.getElementById('deleteDate').value;
-      if (!delDate) return alert('Pick a date');
-      if (confirm(`Delete all from ${delDate}?`)) {
-        data = data.filter(e => e.date !== delDate);
-        await saveToCloud();
-        render();
+      if (username === 'PrimaGul' && password === 'itsprimagul2026') {
+        localStorage.setItem('primaGulLoggedIn', 'true');
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardApp').style.display = 'block';
+        checkConnection();
+        loadFromDatabase();
+      } else {
+        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
       }
     }
 
-    async function deleteRow(index) {
-      if (confirm('Delete this entry?')) {
-        data.splice(index, 1);
-        await saveToCloud();
-        render();
-      }
-    }
-
-    function openEditModal(index) {
-      currentEditIndex = index;
-      const e = data[index];
-      
-      document.getElementById('editDateDisplay').innerText = new Date(e.date).toLocaleDateString('en-PK', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
-      });
-
-      let html = `
-        <div class="modal-input-group">
-          <label>Credit</label>
-          <input type="number" id="editCredit" value="${e.credit || 0}" step="1000">
-        </div>
-
-        <div class="modal-category-header">Factory & Fuel</div>
-        <div class="modal-input-group">
-          <label>Factory</label>
-          <input type="number" id="edit_factory" value="${e.factory || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Bike Fuel</label>
-          <input type="number" id="edit_bikeFuel" value="${e.bikeFuel || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Car Fuel</label>
-          <input type="number" id="edit_carFuel" value="${e.carFuel || 0}" step="1000">
-        </div>
-
-        <div class="modal-category-header">Personnel</div>
-        <div class="modal-input-group">
-          <label>Hasnain</label>
-          <input type="number" id="edit_hasnain" value="${e.hasnain || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Shahzad</label>
-          <input type="number" id="edit_shahzad" value="${e.shahzad || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Salaries</label>
-          <input type="number" id="edit_salaries" value="${e.salaries || 0}" step="1000">
-        </div>
-
-        <div class="modal-category-header">Food & Dining</div>
-        <div class="modal-input-group">
-          <label>Guest Food</label>
-          <input type="number" id="edit_guestFood" value="${e.guestFood || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Food</label>
-          <input type="number" id="edit_food" value="${e.food || 0}" step="1000">
-        </div>
-
-        <div class="modal-category-header">Operations</div>
-        <div class="modal-input-group">
-          <label>Advance</label>
-          <input type="number" id="edit_advance" value="${e.advance || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Bills</label>
-          <input type="number" id="edit_bills" value="${e.bills || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Extra</label>
-          <input type="number" id="edit_extra" value="${e.extra || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Maintenance</label>
-          <input type="number" id="edit_maintenance" value="${e.maintenance || 0}" step="1000">
-        </div>
-
-        <div class="modal-category-header">Other</div>
-        <div class="modal-input-group">
-          <label>Charity</label>
-          <input type="number" id="edit_charity" value="${e.charity || 0}" step="1000">
-        </div>
-        <div class="modal-input-group">
-          <label>Online Ads</label>
-          <input type="number" id="edit_onlineAds" value="${e.onlineAds || 0}" step="1000">
-        </div>
-
-        <div class="modal-input-group full">
-          <label>Notes</label>
-          <textarea id="editNotes" rows="3" placeholder="Add notes...">${e.notes || ''}</textarea>
-        </div>
-      `;
-
-      document.getElementById('editModalFields').innerHTML = html;
-      document.getElementById('editModal').style.display = 'block';
-    }
-
-    function closeEditModal() { 
-      document.getElementById('editModal').style.display = 'none'; 
-      currentEditIndex = -1; 
-    }
-
-    async function saveEdit() {
-      if (currentEditIndex === -1) return;
-      
-      let updated = {
-        date: data[currentEditIndex].date,
-        credit: +document.getElementById('editCredit').value || 0,
-        notes: document.getElementById('editNotes').value || ''
-      };
-      
-      ENTITY_KEYS.forEach(k => {
-        const input = document.getElementById(`edit_${k}`);
-        updated[k] = input ? +input.value || 0 : 0;
-      });
-
-      data[currentEditIndex] = updated;
-      await saveToCloud();
-      closeEditModal();
-      render();
+    function logout() {
+      localStorage.removeItem('primaGulLoggedIn');
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('dashboardApp').style.display = 'none';
     }
 
     function filterTable() {
@@ -1154,34 +910,52 @@
     }
 
     function downloadExcel() {
-      const excelData = data.map(e => {
-        let flat = { Date: e.date, Credit: e.credit };
-        ENTITY_KEYS.forEach(k => flat[k] = e[k] || 0);
-        flat.Notes = e.notes || '';
-        return flat;
-      });
+      const excelData = data.map(e => ({
+        Date: e.date,
+        Credit: e.credit,
+        Factory: e.factory,
+        BikeFuel: e.bike_fuel,
+        CarFuel: e.car_fuel,
+        Hasnain: e.hasnain,
+        GuestFood: e.guest_food,
+        Food: e.food,
+        Salaries: e.salaries,
+        Advance: e.advance,
+        Bills: e.bills,
+        Extra: e.extra,
+        Charity: e.charity,
+        Maintenance: e.maintenance,
+        Shahzad: e.shahzad,
+        OnlineAds: e.online_ads,
+        Notes: e.notes
+      }));
+      
       const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'PrimaGul');
       XLSX.writeFile(wb, `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // Global functions
+    // Check login on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('primaGulLoggedIn') === 'true') {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardApp').style.display = 'block';
+        checkConnection();
+        loadFromDatabase();
+      }
+    });
+
+    // Make functions global
     window.handleLogin = handleLogin;
     window.logout = logout;
     window.addEntry = addEntry;
-    window.deleteByDate = deleteByDate;
     window.deleteRow = deleteRow;
-    window.openEditModal = openEditModal;
-    window.closeEditModal = closeEditModal;
-    window.saveEdit = saveEdit;
+    window.deleteByDate = deleteByDate;
     window.filterTable = filterTable;
     window.downloadExcel = downloadExcel;
-    window.syncFromCloud = syncFromCloud;
-    window.onclick = (e) => { 
-      const modal = document.getElementById('editModal');
-      if (e.target === modal) closeEditModal(); 
-    };
+    window.saveData = loadFromDatabase;
+    window.checkConnection = checkConnection;
   </script>
 </body>
 </html>
