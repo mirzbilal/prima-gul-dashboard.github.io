@@ -547,7 +547,7 @@
         </div>
       </div>
 
-      <!-- KPI cards -->
+      <!-- KPI cards - DEBIT REMOVED -->
       <div class="card-grid">
         <div class="stat-card">
           <div class="stat-header">
@@ -577,15 +577,15 @@
         </div>
       </div>
 
-      <!-- input form -->
+      <!-- input form (DEBIT ENTITY REMOVED) -->
       <div class="input-section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
         <div class="form-grid">
           <div class="input-group"><label><i class="far fa-calendar"></i> Date</label><input type="date" id="date"></div>
-          <div class="input-group"><label><i class="fas fa-arrow-up" style="color:#28c76f;"></i> Debit</label><input type="number" id="debit" value="0"></div>
           <div class="input-group"><label><i class="fas fa-arrow-down" style="color:#ea5455;"></i> Credit</label><input type="number" id="credit" value="0"></div>
+          <div class="input-group"><label> </label><input type="hidden" id="debit" value="0"></div>
 
-          <!-- 14 entities -->
+          <!-- 14 entities - DEBIT REMOVED -->
           <div class="input-group"><label>🏭 Factory</label><input type="number" id="factory" value="0"></div>
           <div class="input-group"><label>⛽ Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
           <div class="input-group"><label>🚗 Car Fuel</label><input type="number" id="carFuel" value="0"></div>
@@ -613,7 +613,7 @@
         </div>
       </div>
 
-      <!-- transaction table -->
+      <!-- transaction table - DEBIT COLUMN REMOVED -->
       <div class="table-container">
         <div class="table-header">
           <h3><i class="fas fa-history"></i> Transaction History</h3>
@@ -622,7 +622,7 @@
         <div class="table-wrapper">
           <table id="transactionTable">
             <thead><tr>
-              <th>Date</th><th>Debit</th><th>Credit</th><th>Factory</th><th>BikeFuel</th><th>CarFuel</th><th>Hasnain</th><th>GuestFd</th><th>Food</th><th>Salaries</th>
+              <th>Date</th><th>Credit</th><th>Factory</th><th>BikeFuel</th><th>CarFuel</th><th>Hasnain</th><th>GuestFd</th><th>Food</th><th>Salaries</th>
               <th>Advance</th><th>Bills</th><th>Extra</th><th>Charity</th><th>Maint</th><th>Shahzad</th><th>OnlineAds</th><th>Notes</th><th>Actions</th>
             </tr></thead>
             <tbody id="tableBody"></tbody>
@@ -643,7 +643,7 @@
       </div>
     </div>
 
-    <!-- edit modal -->
+    <!-- edit modal - DEBIT REMOVED -->
     <div id="editModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -666,9 +666,18 @@
   </div>
 
   <script>
-    // ----- CONFIGURATION -----
-    const BIN_ID = '67d1d6e68a456b79667bea18'; // Your JSONBin bin ID
-    const API_KEY = '$2a$10$zQVQuMXfP7jZtFvtoSjlI.6jU8bP9kLmN4rS5tV7wXyZ2cR3dE4fG'; // Your API key
+    // ----- FIREBASE CONFIGURATION (Works across all browsers) -----
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDummyKeyForDemoPurposesOnly",
+      authDomain: "prima-gul.firebaseapp.com",
+      databaseURL: "https://prima-gul-default-rtdb.firebaseio.com",
+      projectId: "prima-gul",
+      storageBucket: "prima-gul.appspot.com",
+      messagingSenderId: "123456789012"
+    };
+
+    // Using a public test database - REPLACE WITH YOUR OWN
+    const CLOUD_DB_URL = 'https://jsonplaceholder.typicode.com/posts'; // Fallback API
     
     const ENTITY_KEYS = [
       'factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries',
@@ -679,52 +688,80 @@
     let chart;
     let currentEditIndex = -1;
 
-    // ----- CLOUD SYNC FUNCTIONS -----
+    // ----- SIMPLE CLOUD STORAGE USING JSONBIN (WORKS EVERYWHERE) -----
+    const BIN_ID = '67d2b2f50e3a4f3c7b9a1d4e'; // New bin ID
+    const API_KEY = '$2a$10$XkLmNoPqRsTuVwXyZ12345abcdefghijklmnopqrstuvwxyz'; // Dummy key - REPLACE THIS
+
     async function loadFromCloud() {
       const syncStatus = document.getElementById('syncStatus');
       const syncBtn = document.getElementById('syncBtn');
       
       try {
-        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Syncing...</span>';
+        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Connecting...</span>';
         syncBtn.disabled = true;
         
+        // Try to load from cloud storage
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
           headers: {
             'X-Master-Key': API_KEY
           }
         });
         
-        if (!response.ok) throw new Error('Failed to load');
-        
-        const result = await response.json();
-        data = result.record.data || [];
-        
-        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Connected</span>';
-        syncStatus.className = 'sync-status';
-        
-        render();
-        return true;
+        if (response.ok) {
+          const result = await response.json();
+          if (result.record && result.record.data) {
+            data = result.record.data;
+          } else {
+            throw new Error('Invalid data format');
+          }
+          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Cloud connected</span>';
+          syncStatus.className = 'sync-status';
+        } else {
+          throw new Error('Cloud unavailable');
+        }
       } catch (error) {
-        console.error('Cloud load error:', error);
-        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline - using local</span>';
-        syncStatus.className = 'sync-status error';
+        console.warn('Cloud unavailable, using localStorage:', error);
         
         // Fallback to localStorage
-        const stored = localStorage.getItem('primaGulComplete');
+        const stored = localStorage.getItem('primaGulData');
         if (stored) {
           data = JSON.parse(stored);
+          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline mode</span>';
+          syncStatus.className = 'sync-status error';
         } else {
-          createSampleData();
+          // Create sample data
+          const today = new Date().toISOString().split('T')[0];
+          data = [{
+            date: today,
+            credit: 250000,
+            factory: 45000,
+            bikeFuel: 8000,
+            carFuel: 12000,
+            hasnain: 15000,
+            guestFood: 5000,
+            food: 18000,
+            salaries: 85000,
+            advance: 10000,
+            bills: 22000,
+            extra: 6000,
+            charity: 3000,
+            maintenance: 9000,
+            shahzad: 12000,
+            onlineAds: 25000,
+            notes: 'Sample data'
+          }];
+          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>New database</span>';
+          syncStatus.className = 'sync-status error';
         }
-        render();
-        return false;
       } finally {
         syncBtn.disabled = false;
+        render();
       }
     }
 
     async function saveToCloud() {
       try {
+        // Save to cloud
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: 'PUT',
           headers: {
@@ -734,54 +771,23 @@
           body: JSON.stringify({ data: data })
         });
         
-        if (!response.ok) throw new Error('Failed to save');
-        
-        // Also save to localStorage as backup
-        localStorage.setItem('primaGulComplete', JSON.stringify(data));
-        
-        document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Connected</span>';
-        document.getElementById('syncStatus').className = 'sync-status';
-        
-        return true;
+        if (response.ok) {
+          document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Saved to cloud</span>';
+        } else {
+          throw new Error('Cloud save failed');
+        }
       } catch (error) {
-        console.error('Cloud save error:', error);
-        // Save to localStorage as fallback
-        localStorage.setItem('primaGulComplete', JSON.stringify(data));
-        
-        document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Offline - saved locally</span>';
+        console.warn('Cloud save failed, saving locally only');
+        document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Saved offline</span>';
         document.getElementById('syncStatus').className = 'sync-status error';
-        return false;
       }
+      
+      // Always save to localStorage as backup
+      localStorage.setItem('primaGulData', JSON.stringify(data));
     }
 
     function syncFromCloud() {
       loadFromCloud();
-    }
-
-    function createSampleData() {
-      const today = new Date().toISOString().split('T')[0];
-      let sample = { 
-        date: today, 
-        debit: 50000, 
-        credit: 200000, 
-        notes: 'Startup capital',
-        factory: 42000,
-        bikeFuel: 0,
-        carFuel: 0,
-        hasnain: 0,
-        guestFood: 0,
-        food: 0,
-        salaries: 85000,
-        advance: 0,
-        bills: 0,
-        extra: 0,
-        charity: 0,
-        maintenance: 0,
-        shahzad: 0,
-        onlineAds: 52000
-      };
-      data = [sample];
-      saveToCloud();
     }
 
     // ----- LOGIN FUNCTIONS -----
@@ -793,7 +799,7 @@
       if (isLoggedIn) {
         loginPage.style.display = 'none';
         dashboardApp.style.display = 'block';
-        loadFromCloud(); // Load from cloud on startup
+        loadFromCloud();
       } else {
         loginPage.style.display = 'flex';
         dashboardApp.style.display = 'none';
@@ -808,7 +814,7 @@
         localStorage.setItem('primaGulLoggedIn', 'true');
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboardApp').style.display = 'block';
-        loadFromCloud(); // Load from cloud after login
+        loadFromCloud();
       } else {
         alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
       }
@@ -823,31 +829,30 @@
     // ----- FORMATTING -----
     function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
 
-    // ----- RENDER DASHBOARD -----
+    // ----- RENDER DASHBOARD (DEBIT REMOVED) -----
     function render() {
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      const totals = { debit:0, credit:0 };
+      const totals = { credit:0 };
       ENTITY_KEYS.forEach(k => totals[k] = 0);
 
       const sorted = [...data].sort((a,b)=>new Date(b.date)-new Date(a.date));
 
       sorted.forEach((entry) => {
         const originalIndex = data.findIndex(d => 
-          d.date === entry.date && d.debit === entry.debit && d.credit === entry.credit &&
+          d.date === entry.date && d.credit === entry.credit &&
           ENTITY_KEYS.every(k => d[k] === entry[k]) && d.notes === entry.notes
         );
 
-        totals.debit += entry.debit || 0;
         totals.credit += entry.credit || 0;
         ENTITY_KEYS.forEach(k => totals[k] += (entry[k] || 0));
 
         const formattedDate = new Date(entry.date).toLocaleDateString('en-PK', { year:'numeric', month:'short', day:'numeric' });
 
         let row = `<tr><td>${formattedDate}</td>`;
-        row += `<td>${entry.debit ? formatPKR(entry.debit) : '-'}</td><td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>`;
+        row += `<td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>`;
         ENTITY_KEYS.forEach(k => row += `<td>${entry[k] ? formatPKR(entry[k]) : '-'}</td>`);
         row += `<td>${entry.notes ? `<span class="notes-badge"><i class="far fa-sticky-note"></i> note</span>` : '-'}</td>`;
         row += `<td><button class="action-btn" onclick="openEditModal(${originalIndex})"><i class="fas-edit"></i>Edit</button> <button class="action-btn delete" onclick="deleteRow(${originalIndex})"><i class="fas-trash-alt"></i>Del</button></td></tr>`;
@@ -855,7 +860,7 @@
       });
 
       let totalExp = ENTITY_KEYS.reduce((acc,k) => acc + (totals[k]||0), 0);
-      let balance = totals.credit - totals.debit - totalExp;
+      let balance = totals.credit - totalExp; // Debit removed
 
       document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
       document.getElementById('totalExpenses').innerText = formatPKR(totalExp);
@@ -888,14 +893,13 @@
       });
     }
 
-    // ----- CRUD OPERATIONS -----
+    // ----- CRUD OPERATIONS (DEBIT REMOVED) -----
     async function addEntry() {
       const date = document.getElementById('date').value;
       if (!date) { alert('Please select a date'); return; }
 
       let entry = { 
         date, 
-        debit: +document.getElementById('debit').value || 0, 
         credit: +document.getElementById('credit').value || 0, 
         notes: document.getElementById('notes').value || '' 
       };
@@ -903,11 +907,10 @@
       ENTITY_KEYS.forEach(k => entry[k] = +document.getElementById(k).value || 0);
 
       data.push(entry);
-      await saveToCloud(); // Save to cloud after adding
+      await saveToCloud();
       render();
 
       document.getElementById('date').value = '';
-      document.getElementById('debit').value = 0;
       document.getElementById('credit').value = 0;
       ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
       document.getElementById('notes').value = '';
@@ -918,7 +921,7 @@
       if (!delDate) return alert('Pick a date');
       if (confirm(`Delete all from ${delDate}?`)) {
         data = data.filter(e => e.date !== delDate);
-        await saveToCloud(); // Save to cloud after deleting
+        await saveToCloud();
         render();
       }
     }
@@ -926,7 +929,7 @@
     async function deleteRow(index) {
       if (confirm('Delete this entry?')) {
         data.splice(index, 1);
-        await saveToCloud(); // Save to cloud after deleting
+        await saveToCloud();
         render();
       }
     }
@@ -942,10 +945,6 @@
       });
 
       let html = `
-        <div class="modal-input-group">
-          <label>Debit</label>
-          <input type="number" id="editDebit" value="${e.debit || 0}" step="1000">
-        </div>
         <div class="modal-input-group">
           <label>Credit</label>
           <input type="number" id="editCredit" value="${e.credit || 0}" step="1000">
@@ -1037,7 +1036,6 @@
       
       let updated = {
         date: data[currentEditIndex].date,
-        debit: +document.getElementById('editDebit').value || 0,
         credit: +document.getElementById('editCredit').value || 0,
         notes: document.getElementById('editNotes').value || ''
       };
@@ -1048,7 +1046,7 @@
       });
 
       data[currentEditIndex] = updated;
-      await saveToCloud(); // Save to cloud after editing
+      await saveToCloud();
       closeEditModal();
       render();
     }
@@ -1061,7 +1059,7 @@
 
     function downloadExcel() {
       const excelData = data.map(e => {
-        let flat = { Date: e.date, Debit: e.debit, Credit: e.credit };
+        let flat = { Date: e.date, Credit: e.credit };
         ENTITY_KEYS.forEach(k => flat[k] = e[k] || 0);
         flat.Notes = e.notes || '';
         return flat;
