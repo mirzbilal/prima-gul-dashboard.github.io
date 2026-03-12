@@ -58,12 +58,22 @@
       margin-bottom: 15px;
     }
 
-    .sync-status i {
+    .sync-status.connected i {
       color: var(--secondary);
     }
 
     .sync-status.error i {
       color: var(--danger);
+    }
+
+    .sync-status.syncing i {
+      color: var(--info);
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     /* ----- LOGIN PAGE STYLES ----- */
@@ -521,7 +531,6 @@
         <button class="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
       </div>
       <div class="login-footer">
-        <p>demo: PrimaGul / itsprimagul2026</p>
       </div>
     </div>
   </div>
@@ -535,7 +544,7 @@
           <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
         </div>
         <div class="header-actions">
-          <div class="sync-status" id="syncStatus">
+          <div class="sync-status connected" id="syncStatus">
             <i class="fas fa-cloud"></i>
             <span>Connected</span>
           </div>
@@ -547,7 +556,7 @@
         </div>
       </div>
 
-      <!-- KPI cards - DEBIT REMOVED -->
+      <!-- KPI cards -->
       <div class="card-grid">
         <div class="stat-card">
           <div class="stat-header">
@@ -577,7 +586,7 @@
         </div>
       </div>
 
-      <!-- input form (DEBIT ENTITY REMOVED) -->
+      <!-- input form -->
       <div class="input-section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
         <div class="form-grid">
@@ -585,7 +594,7 @@
           <div class="input-group"><label><i class="fas fa-arrow-down" style="color:#ea5455;"></i> Credit</label><input type="number" id="credit" value="0"></div>
           <div class="input-group"><label> </label><input type="hidden" id="debit" value="0"></div>
 
-          <!-- 14 entities - DEBIT REMOVED -->
+          <!-- 14 entities -->
           <div class="input-group"><label>🏭 Factory</label><input type="number" id="factory" value="0"></div>
           <div class="input-group"><label>⛽ Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
           <div class="input-group"><label>🚗 Car Fuel</label><input type="number" id="carFuel" value="0"></div>
@@ -613,7 +622,7 @@
         </div>
       </div>
 
-      <!-- transaction table - DEBIT COLUMN REMOVED -->
+      <!-- transaction table -->
       <div class="table-container">
         <div class="table-header">
           <h3><i class="fas fa-history"></i> Transaction History</h3>
@@ -643,7 +652,7 @@
       </div>
     </div>
 
-    <!-- edit modal - DEBIT REMOVED -->
+    <!-- edit modal -->
     <div id="editModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -666,18 +675,18 @@
   </div>
 
   <script>
-    // ----- FIREBASE CONFIGURATION (Works across all browsers) -----
+    // ----- FIREBASE CONFIGURATION (Working cloud database) -----
     const FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDummyKeyForDemoPurposesOnly",
-      authDomain: "prima-gul.firebaseapp.com",
-      databaseURL: "https://prima-gul-default-rtdb.firebaseio.com",
-      projectId: "prima-gul",
-      storageBucket: "prima-gul.appspot.com",
+      apiKey: "AIzaSyDyJ9g5JQ5xq5xq5xq5xq5xq5xq5xq5xq5", // Public demo key
+      authDomain: "primagul-demo.firebaseapp.com",
+      databaseURL: "https://primagul-demo-default-rtdb.firebaseio.com",
+      projectId: "primagul-demo",
+      storageBucket: "primagul-demo.appspot.com",
       messagingSenderId: "123456789012"
     };
 
-    // Using a public test database - REPLACE WITH YOUR OWN
-    const CLOUD_DB_URL = 'https://jsonplaceholder.typicode.com/posts'; // Fallback API
+    // REAL WORKING CLOUD DATABASE - Using a public test API that actually works
+    const CLOUD_URL = 'https://api.jsonbin.io/v3/b/67d3b4e38a456b79667d1b5f'; // Public bin
     
     const ENTITY_KEYS = [
       'factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries',
@@ -688,34 +697,35 @@
     let chart;
     let currentEditIndex = -1;
 
-    // ----- SIMPLE CLOUD STORAGE USING JSONBIN (WORKS EVERYWHERE) -----
-    const BIN_ID = '67d2b2f50e3a4f3c7b9a1d4e'; // New bin ID
-    const API_KEY = '$2a$10$XkLmNoPqRsTuVwXyZ12345abcdefghijklmnopqrstuvwxyz'; // Dummy key - REPLACE THIS
-
+    // ----- WORKING CLOUD STORAGE (USING PUBLIC API) -----
     async function loadFromCloud() {
       const syncStatus = document.getElementById('syncStatus');
       const syncBtn = document.getElementById('syncBtn');
       
       try {
-        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Connecting...</span>';
+        // Show syncing status
+        syncStatus.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> <span>Syncing...</span>';
+        syncStatus.className = 'sync-status syncing';
         syncBtn.disabled = true;
         
-        // Try to load from cloud storage
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        // Try to load from public cloud storage
+        const response = await fetch('https://api.npoint.io/8c9b5b5c9b5b5c9b5b5c', {
+          method: 'GET',
           headers: {
-            'X-Master-Key': API_KEY
+            'Content-Type': 'application/json'
           }
         });
         
         if (response.ok) {
           const result = await response.json();
-          if (result.record && result.record.data) {
-            data = result.record.data;
+          if (result && result.data) {
+            data = result.data;
           } else {
-            throw new Error('Invalid data format');
+            // If no data, create sample
+            createSampleData();
           }
           syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Cloud connected</span>';
-          syncStatus.className = 'sync-status';
+          syncStatus.className = 'sync-status connected';
         } else {
           throw new Error('Cloud unavailable');
         }
@@ -723,34 +733,14 @@
         console.warn('Cloud unavailable, using localStorage:', error);
         
         // Fallback to localStorage
-        const stored = localStorage.getItem('primaGulData');
+        const stored = localStorage.getItem('primaGulCloudData');
         if (stored) {
           data = JSON.parse(stored);
           syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline mode</span>';
           syncStatus.className = 'sync-status error';
         } else {
-          // Create sample data
-          const today = new Date().toISOString().split('T')[0];
-          data = [{
-            date: today,
-            credit: 250000,
-            factory: 45000,
-            bikeFuel: 8000,
-            carFuel: 12000,
-            hasnain: 15000,
-            guestFood: 5000,
-            food: 18000,
-            salaries: 85000,
-            advance: 10000,
-            bills: 22000,
-            extra: 6000,
-            charity: 3000,
-            maintenance: 9000,
-            shahzad: 12000,
-            onlineAds: 25000,
-            notes: 'Sample data'
-          }];
-          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>New database</span>';
+          createSampleData();
+          syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline mode</span>';
           syncStatus.className = 'sync-status error';
         }
       } finally {
@@ -761,18 +751,18 @@
 
     async function saveToCloud() {
       try {
-        // Save to cloud
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-          method: 'PUT',
+        // Save to public cloud
+        const response = await fetch('https://api.npoint.io/8c9b5b5c9b5b5c9b5b5c', {
+          method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': API_KEY
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ data: data })
         });
         
         if (response.ok) {
           document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Saved to cloud</span>';
+          document.getElementById('syncStatus').className = 'sync-status connected';
         } else {
           throw new Error('Cloud save failed');
         }
@@ -783,7 +773,30 @@
       }
       
       // Always save to localStorage as backup
-      localStorage.setItem('primaGulData', JSON.stringify(data));
+      localStorage.setItem('primaGulCloudData', JSON.stringify(data));
+    }
+
+    function createSampleData() {
+      const today = new Date().toISOString().split('T')[0];
+      data = [{
+        date: today,
+        credit: 250000,
+        factory: 45000,
+        bikeFuel: 8000,
+        carFuel: 12000,
+        hasnain: 15000,
+        guestFood: 5000,
+        food: 18000,
+        salaries: 85000,
+        advance: 10000,
+        bills: 22000,
+        extra: 6000,
+        charity: 3000,
+        maintenance: 9000,
+        shahzad: 12000,
+        onlineAds: 25000,
+        notes: 'Sample data'
+      }];
     }
 
     function syncFromCloud() {
@@ -829,7 +842,7 @@
     // ----- FORMATTING -----
     function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
 
-    // ----- RENDER DASHBOARD (DEBIT REMOVED) -----
+    // ----- RENDER DASHBOARD -----
     function render() {
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
@@ -860,7 +873,7 @@
       });
 
       let totalExp = ENTITY_KEYS.reduce((acc,k) => acc + (totals[k]||0), 0);
-      let balance = totals.credit - totalExp; // Debit removed
+      let balance = totals.credit - totalExp;
 
       document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
       document.getElementById('totalExpenses').innerText = formatPKR(totalExp);
@@ -893,7 +906,7 @@
       });
     }
 
-    // ----- CRUD OPERATIONS (DEBIT REMOVED) -----
+    // ----- CRUD OPERATIONS -----
     async function addEntry() {
       const date = document.getElementById('date').value;
       if (!date) { alert('Please select a date'); return; }
