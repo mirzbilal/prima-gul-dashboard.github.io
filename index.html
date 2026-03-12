@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Prima Gul · complete system</title>
+  <title>Prima Gul · Cloud Sync</title>
 
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -43,6 +43,27 @@
       max-width: 1600px;
       margin: 0 auto;
       padding: 24px 32px;
+    }
+
+    /* Sync Status Bar */
+    .sync-status {
+      background: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      margin-bottom: 15px;
+    }
+
+    .sync-status i {
+      color: var(--secondary);
+    }
+
+    .sync-status.error i {
+      color: var(--danger);
     }
 
     /* ----- LOGIN PAGE STYLES ----- */
@@ -143,7 +164,6 @@
       font-size: 13px;
     }
 
-    /* ----- DASHBOARD STYLES ----- */
     #dashboardApp {
       display: none;
     }
@@ -158,6 +178,7 @@
       border-radius: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
+      flex-wrap: wrap;
     }
 
     .logo-section {
@@ -197,11 +218,11 @@
 
     .btn-danger { background: var(--danger); color: white; border: none; }
     .btn-logout { background: var(--dark-light); color: white; border: none; }
+    .btn-sync { background: var(--info); color: white; border: none; }
 
-    /* KPI cards */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 22px;
       margin-bottom: 26px;
     }
@@ -223,10 +244,9 @@
       background: var(--gradient-primary);
     }
 
-    .stat-card:nth-child(1)::before { background: var(--gradient-primary); }
-    .stat-card:nth-child(2)::before { background: linear-gradient(135deg, #28c76f 0%, #5adf8a 100%); }
-    .stat-card:nth-child(3)::before { background: linear-gradient(135deg, #ff9f43 0%, #ffb976 100%); }
-    .stat-card:nth-child(4)::before { background: linear-gradient(135deg, #00cfe8 0%, #53e2f5 100%); }
+    .stat-card:nth-child(1)::before { background: linear-gradient(135deg, #28c76f 0%, #5adf8a 100%); }
+    .stat-card:nth-child(2)::before { background: linear-gradient(135deg, #ff9f43 0%, #ffb976 100%); }
+    .stat-card:nth-child(3)::before { background: linear-gradient(135deg, #00cfe8 0%, #53e2f5 100%); }
 
     .stat-header {
       display: flex;
@@ -240,15 +260,13 @@
       width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center; font-size: 18px;
     }
-    .stat-card:nth-child(1) .stat-icon { background: rgba(115,103,240,0.12); color: var(--primary); }
-    .stat-card:nth-child(2) .stat-icon { background: rgba(40,199,111,0.12); color: var(--secondary); }
-    .stat-card:nth-child(3) .stat-icon { background: rgba(255,159,67,0.12); color: var(--warning); }
-    .stat-card:nth-child(4) .stat-icon { background: rgba(0,207,232,0.12); color: var(--info); }
+    .stat-card:nth-child(1) .stat-icon { background: rgba(40,199,111,0.12); color: var(--secondary); }
+    .stat-card:nth-child(2) .stat-icon { background: rgba(255,159,67,0.12); color: var(--warning); }
+    .stat-card:nth-child(3) .stat-icon { background: rgba(0,207,232,0.12); color: var(--info); }
 
     .stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); }
     .stat-label { font-size: 11px; color: var(--text-secondary); }
 
-    /* input section */
     .input-section {
       background: white;
       padding: 24px 28px;
@@ -291,7 +309,6 @@
 
     .action-buttons { display: flex; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
 
-    /* table */
     .table-container {
       background: white;
       border-radius: 20px;
@@ -334,7 +351,6 @@
       font-size: 11px; display: inline-flex; align-items: center; gap: 6px; color: var(--primary);
     }
 
-    /* chart */
     .chart-section {
       background: white; border-radius: 20px; border: 1px solid var(--border);
       padding: 24px; margin-top: 20px;
@@ -348,7 +364,6 @@
     .chart-stats { flex: 1; display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
     .stat-item { background: #fafbfc; padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
 
-    /* ----- IMPROVED EDIT MODAL STYLES ----- */
     .modal {
       display: none; 
       position: fixed; 
@@ -400,7 +415,6 @@
       color: var(--danger);
     }
 
-    /* Edit modal grid layout - 4 columns */
     .modal-form-grid { 
       display: grid; 
       grid-template-columns: repeat(4, 1fr); 
@@ -444,7 +458,6 @@
       background: white;
     }
 
-    /* Category headers in edit modal */
     .modal-category-header {
       grid-column: span 4;
       font-size: 16px;
@@ -465,7 +478,6 @@
       border-top: 1px solid var(--border);
     }
 
-    /* Date display in edit modal */
     .modal-date-display {
       background: #f0f4f8;
       padding: 12px 16px;
@@ -473,6 +485,7 @@
       font-weight: 600;
       color: var(--primary);
       border: 1px solid var(--border);
+      margin-bottom: 20px;
     }
 
     @media (max-width: 768px) {
@@ -481,6 +494,9 @@
       }
       .modal-input-group.full {
         grid-column: span 2;
+      }
+      .card-grid {
+        grid-template-columns: repeat(1, 1fr);
       }
     }
   </style>
@@ -513,12 +529,19 @@
   <!-- DASHBOARD -->
   <div id="dashboardApp" style="display: none;">
     <div class="container">
-      <!-- header with logout -->
+      <!-- header with logout and sync -->
       <div class="header">
         <div class="logo-section">
           <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
         </div>
         <div class="header-actions">
+          <div class="sync-status" id="syncStatus">
+            <i class="fas fa-cloud"></i>
+            <span>Connected</span>
+          </div>
+          <button class="btn btn-sync" onclick="syncFromCloud()" id="syncBtn">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
           <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel" style="color:var(--primary);"></i> Export</button>
           <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
@@ -526,13 +549,35 @@
 
       <!-- KPI cards -->
       <div class="card-grid">
-        <div class="stat-card"><div class="stat-header"><h3>Total Debit</h3><div class="stat-icon"><i class="fas fa-arrow-up"></i></div></div><div class="stat-value" id="totalDebit">Rs 0</div><div class="stat-label">Outgoing</div></div>
-        <div class="stat-card"><div class="stat-header"><h3>Total Credit</h3><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div><div class="stat-value" id="totalCredit">Rs 0</div><div class="stat-label">Incoming</div></div>
-        <div class="stat-card"><div class="stat-header"><h3>Total Expenses</h3><div class="stat-icon"><i class="fas fa-receipt"></i></div></div><div class="stat-value" id="totalExpenses">Rs 0</div><div class="stat-label">Operational</div></div>
-        <div class="stat-card"><div class="stat-header"><h3>Net Balance</h3><div class="stat-icon"><i class="fas fa-wallet"></i></div></div><div class="stat-value" id="balance">Rs 0</div><div class="stat-label">Available</div></div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <h3>Total Credit</h3>
+            <div class="stat-icon"><i class="fas fa-arrow-down"></i></div>
+          </div>
+          <div class="stat-value" id="totalCredit">Rs 0</div>
+          <div class="stat-label">Incoming</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-header">
+            <h3>Total Expenses</h3>
+            <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+          </div>
+          <div class="stat-value" id="totalExpenses">Rs 0</div>
+          <div class="stat-label">Operational</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-header">
+            <h3>Net Balance</h3>
+            <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+          </div>
+          <div class="stat-value" id="balance">Rs 0</div>
+          <div class="stat-label">Available</div>
+        </div>
       </div>
 
-      <!-- input form (14 entities) -->
+      <!-- input form -->
       <div class="input-section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
         <div class="form-grid">
@@ -598,7 +643,7 @@
       </div>
     </div>
 
-    <!-- IMPROVED EDIT MODAL -->
+    <!-- edit modal -->
     <div id="editModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -606,13 +651,11 @@
           <span class="close-modal" onclick="closeEditModal()">&times;</span>
         </div>
         
-        <div class="modal-date-display" id="modalDateDisplay" style="margin-bottom: 20px;">
+        <div class="modal-date-display">
           Date: <span id="editDateDisplay"></span>
         </div>
 
-        <div class="modal-form-grid" id="editModalFields">
-          <!-- Fields will be dynamically populated here -->
-        </div>
+        <div class="modal-form-grid" id="editModalFields"></div>
 
         <div class="modal-actions">
           <button class="btn btn-primary" onclick="saveEdit()" style="padding: 12px 30px;"><i class="fas fa-save"></i> Save Changes</button>
@@ -623,7 +666,10 @@
   </div>
 
   <script>
-    // ----- GLOBAL VARIABLES -----
+    // ----- CONFIGURATION -----
+    const BIN_ID = '67d1d6e68a456b79667bea18'; // Your JSONBin bin ID
+    const API_KEY = '$2a$10$zQVQuMXfP7jZtFvtoSjlI.6jU8bP9kLmN4rS5tV7wXyZ2cR3dE4fG'; // Your API key
+    
     const ENTITY_KEYS = [
       'factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries',
       'advance','bills','extra','charity','maintenance','shahzad','onlineAds'
@@ -633,34 +679,136 @@
     let chart;
     let currentEditIndex = -1;
 
-    // Check login state on page load - FIXED VERSION
+    // ----- CLOUD SYNC FUNCTIONS -----
+    async function loadFromCloud() {
+      const syncStatus = document.getElementById('syncStatus');
+      const syncBtn = document.getElementById('syncBtn');
+      
+      try {
+        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Syncing...</span>';
+        syncBtn.disabled = true;
+        
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: {
+            'X-Master-Key': API_KEY
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load');
+        
+        const result = await response.json();
+        data = result.record.data || [];
+        
+        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Connected</span>';
+        syncStatus.className = 'sync-status';
+        
+        render();
+        return true;
+      } catch (error) {
+        console.error('Cloud load error:', error);
+        syncStatus.innerHTML = '<i class="fas fa-cloud"></i> <span>Offline - using local</span>';
+        syncStatus.className = 'sync-status error';
+        
+        // Fallback to localStorage
+        const stored = localStorage.getItem('primaGulComplete');
+        if (stored) {
+          data = JSON.parse(stored);
+        } else {
+          createSampleData();
+        }
+        render();
+        return false;
+      } finally {
+        syncBtn.disabled = false;
+      }
+    }
+
+    async function saveToCloud() {
+      try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+          },
+          body: JSON.stringify({ data: data })
+        });
+        
+        if (!response.ok) throw new Error('Failed to save');
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        
+        document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Connected</span>';
+        document.getElementById('syncStatus').className = 'sync-status';
+        
+        return true;
+      } catch (error) {
+        console.error('Cloud save error:', error);
+        // Save to localStorage as fallback
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        
+        document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud"></i> <span>Offline - saved locally</span>';
+        document.getElementById('syncStatus').className = 'sync-status error';
+        return false;
+      }
+    }
+
+    function syncFromCloud() {
+      loadFromCloud();
+    }
+
+    function createSampleData() {
+      const today = new Date().toISOString().split('T')[0];
+      let sample = { 
+        date: today, 
+        debit: 50000, 
+        credit: 200000, 
+        notes: 'Startup capital',
+        factory: 42000,
+        bikeFuel: 0,
+        carFuel: 0,
+        hasnain: 0,
+        guestFood: 0,
+        food: 0,
+        salaries: 85000,
+        advance: 0,
+        bills: 0,
+        extra: 0,
+        charity: 0,
+        maintenance: 0,
+        shahzad: 0,
+        onlineAds: 52000
+      };
+      data = [sample];
+      saveToCloud();
+    }
+
+    // ----- LOGIN FUNCTIONS -----
     document.addEventListener('DOMContentLoaded', function() {
       const isLoggedIn = localStorage.getItem('primaGulLoggedIn') === 'true';
       const loginPage = document.getElementById('loginPage');
       const dashboardApp = document.getElementById('dashboardApp');
       
-      console.log('Login state:', isLoggedIn); // Debug log
-      
       if (isLoggedIn) {
         loginPage.style.display = 'none';
         dashboardApp.style.display = 'block';
-        loadData();
+        loadFromCloud(); // Load from cloud on startup
       } else {
         loginPage.style.display = 'flex';
         dashboardApp.style.display = 'none';
       }
     });
 
-    // ----- LOGIN FUNCTION -----
     function handleLogin() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
       if (username === 'PrimaGul' && password === 'itsprimagul2026') {
         localStorage.setItem('primaGulLoggedIn', 'true');
-        loadData();
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboardApp').style.display = 'block';
+        loadFromCloud(); // Load from cloud after login
       } else {
         alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
       }
@@ -672,39 +820,7 @@
       document.getElementById('dashboardApp').style.display = 'none';
     }
 
-    // ----- DATA PERSISTENCE -----
-    function loadData() {
-      const stored = localStorage.getItem('primaGulComplete');
-      if (stored) {
-        data = JSON.parse(stored);
-      } else {
-        const today = new Date().toISOString().split('T')[0];
-        let sample = { 
-          date: today, 
-          debit: 50000, 
-          credit: 200000, 
-          notes: 'Startup capital',
-          factory: 42000,
-          bikeFuel: 0,
-          carFuel: 0,
-          hasnain: 0,
-          guestFood: 0,
-          food: 0,
-          salaries: 85000,
-          advance: 0,
-          bills: 0,
-          extra: 0,
-          charity: 0,
-          maintenance: 0,
-          shahzad: 0,
-          onlineAds: 52000
-        };
-        data.push(sample);
-        localStorage.setItem('primaGulComplete', JSON.stringify(data));
-      }
-      render();
-    }
-
+    // ----- FORMATTING -----
     function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
 
     // ----- RENDER DASHBOARD -----
@@ -741,7 +857,6 @@
       let totalExp = ENTITY_KEYS.reduce((acc,k) => acc + (totals[k]||0), 0);
       let balance = totals.credit - totals.debit - totalExp;
 
-      document.getElementById('totalDebit').innerText = formatPKR(totals.debit);
       document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
       document.getElementById('totalExpenses').innerText = formatPKR(totalExp);
       document.getElementById('balance').innerText = (balance < 0 ? '-Rs ' : 'Rs ') + Math.abs(balance).toLocaleString('en-PK');
@@ -773,21 +888,60 @@
       });
     }
 
-    // ----- IMPROVED EDIT MODAL -----
+    // ----- CRUD OPERATIONS -----
+    async function addEntry() {
+      const date = document.getElementById('date').value;
+      if (!date) { alert('Please select a date'); return; }
+
+      let entry = { 
+        date, 
+        debit: +document.getElementById('debit').value || 0, 
+        credit: +document.getElementById('credit').value || 0, 
+        notes: document.getElementById('notes').value || '' 
+      };
+      
+      ENTITY_KEYS.forEach(k => entry[k] = +document.getElementById(k).value || 0);
+
+      data.push(entry);
+      await saveToCloud(); // Save to cloud after adding
+      render();
+
+      document.getElementById('date').value = '';
+      document.getElementById('debit').value = 0;
+      document.getElementById('credit').value = 0;
+      ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
+      document.getElementById('notes').value = '';
+    }
+
+    async function deleteByDate() {
+      const delDate = document.getElementById('deleteDate').value;
+      if (!delDate) return alert('Pick a date');
+      if (confirm(`Delete all from ${delDate}?`)) {
+        data = data.filter(e => e.date !== delDate);
+        await saveToCloud(); // Save to cloud after deleting
+        render();
+      }
+    }
+
+    async function deleteRow(index) {
+      if (confirm('Delete this entry?')) {
+        data.splice(index, 1);
+        await saveToCloud(); // Save to cloud after deleting
+        render();
+      }
+    }
+
     function openEditModal(index) {
       currentEditIndex = index;
       const e = data[index];
       
-      // Set date display
       document.getElementById('editDateDisplay').innerText = new Date(e.date).toLocaleDateString('en-PK', { 
         year: 'numeric', 
         month: '2-digit', 
         day: '2-digit' 
       });
 
-      // Build the form with categories
       let html = `
-        <!-- Debit & Credit -->
         <div class="modal-input-group">
           <label>Debit</label>
           <input type="number" id="editDebit" value="${e.debit || 0}" step="1000">
@@ -878,11 +1032,11 @@
       currentEditIndex = -1; 
     }
 
-    function saveEdit() {
+    async function saveEdit() {
       if (currentEditIndex === -1) return;
       
       let updated = {
-        date: data[currentEditIndex].date, // Keep original date
+        date: data[currentEditIndex].date,
         debit: +document.getElementById('editDebit').value || 0,
         credit: +document.getElementById('editCredit').value || 0,
         notes: document.getElementById('editNotes').value || ''
@@ -894,54 +1048,9 @@
       });
 
       data[currentEditIndex] = updated;
-      localStorage.setItem('primaGulComplete', JSON.stringify(data));
+      await saveToCloud(); // Save to cloud after editing
       closeEditModal();
       render();
-    }
-
-    // ----- CRUD OPERATIONS -----
-    function addEntry() {
-      const date = document.getElementById('date').value;
-      if (!date) { alert('Please select a date'); return; }
-
-      let entry = { 
-        date, 
-        debit: +document.getElementById('debit').value || 0, 
-        credit: +document.getElementById('credit').value || 0, 
-        notes: document.getElementById('notes').value || '' 
-      };
-      
-      ENTITY_KEYS.forEach(k => entry[k] = +document.getElementById(k).value || 0);
-
-      data.push(entry);
-      localStorage.setItem('primaGulComplete', JSON.stringify(data));
-
-      // reset form
-      document.getElementById('date').value = '';
-      document.getElementById('debit').value = 0;
-      document.getElementById('credit').value = 0;
-      ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
-      document.getElementById('notes').value = '';
-
-      render();
-    }
-
-    function deleteByDate() {
-      const delDate = document.getElementById('deleteDate').value;
-      if (!delDate) return alert('Pick a date');
-      if (confirm(`Delete all from ${delDate}?`)) {
-        data = data.filter(e => e.date !== delDate);
-        localStorage.setItem('primaGulComplete', JSON.stringify(data));
-        render();
-      }
-    }
-
-    function deleteRow(index) {
-      if (confirm('Delete this entry?')) {
-        data.splice(index, 1);
-        localStorage.setItem('primaGulComplete', JSON.stringify(data));
-        render();
-      }
     }
 
     function filterTable() {
@@ -963,7 +1072,7 @@
       XLSX.writeFile(wb, `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // make functions global for onclick
+    // Global functions
     window.handleLogin = handleLogin;
     window.logout = logout;
     window.addEntry = addEntry;
@@ -974,6 +1083,7 @@
     window.saveEdit = saveEdit;
     window.filterTable = filterTable;
     window.downloadExcel = downloadExcel;
+    window.syncFromCloud = syncFromCloud;
     window.onclick = (e) => { 
       const modal = document.getElementById('editModal');
       if (e.target === modal) closeEditModal(); 
