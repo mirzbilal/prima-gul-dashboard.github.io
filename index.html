@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prima Gul · Database Connected</title>
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Prima Gul · Finance Manager</title>
+
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  
-  <!-- Supabase Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Supabase client (optional backups) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <style>
     :root {
@@ -47,25 +47,7 @@
       padding: 24px 32px;
     }
 
-    .db-status {
-      background: white;
-      padding: 10px 20px;
-      border-radius: 30px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      border: 1px solid var(--border);
-    }
-    .db-status.connected i { color: var(--secondary); }
-    .db-status.error i { color: var(--danger); }
-    .db-status.syncing i { color: var(--info); animation: spin 1s linear infinite; }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
+    /* ----- LOGIN PAGE STYLES ----- */
     .login-container {
       min-height: 100vh;
       display: flex;
@@ -82,6 +64,12 @@
       width: 100%;
       max-width: 420px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     .login-header {
@@ -123,6 +111,7 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       font-size: 14px;
+      transition: 0.2s;
     }
 
     .input-field input:focus {
@@ -156,6 +145,7 @@
       font-size: 13px;
     }
 
+    /* ----- DASHBOARD STYLES ----- */
     #dashboardApp {
       display: none;
     }
@@ -170,7 +160,6 @@
       border-radius: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
-      flex-wrap: wrap;
     }
 
     .logo-section {
@@ -200,6 +189,14 @@
       color: var(--text-primary);
     }
 
+    .sync-status {
+      margin-left: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      align-self: center;
+    }
+
     .btn-primary {
       background: var(--gradient-primary);
       color: white;
@@ -208,19 +205,13 @@
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(115,103,240,0.3); }
 
-    .btn-success {
-      background: var(--secondary);
-      color: white;
-      border: none;
-    }
-    .btn-success:hover { background: var(--secondary-dark); }
-
     .btn-danger { background: var(--danger); color: white; border: none; }
     .btn-logout { background: var(--dark-light); color: white; border: none; }
 
+    /* KPI cards */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 22px;
       margin-bottom: 26px;
     }
@@ -242,9 +233,10 @@
       background: var(--gradient-primary);
     }
 
-    .stat-card:nth-child(1)::before { background: linear-gradient(135deg, #28c76f 0%, #5adf8a 100%); }
-    .stat-card:nth-child(2)::before { background: linear-gradient(135deg, #ff9f43 0%, #ffb976 100%); }
-    .stat-card:nth-child(3)::before { background: linear-gradient(135deg, #00cfe8 0%, #53e2f5 100%); }
+    .stat-card:nth-child(1)::before { background: var(--gradient-primary); }
+    .stat-card:nth-child(2)::before { background: linear-gradient(135deg, #28c76f 0%, #5adf8a 100%); }
+    .stat-card:nth-child(3)::before { background: linear-gradient(135deg, #ff9f43 0%, #ffb976 100%); }
+    .stat-card:nth-child(4)::before { background: linear-gradient(135deg, #00cfe8 0%, #53e2f5 100%); }
 
     .stat-header {
       display: flex;
@@ -258,13 +250,15 @@
       width: 40px; height: 40px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center; font-size: 18px;
     }
-    .stat-card:nth-child(1) .stat-icon { background: rgba(40,199,111,0.12); color: var(--secondary); }
-    .stat-card:nth-child(2) .stat-icon { background: rgba(255,159,67,0.12); color: var(--warning); }
-    .stat-card:nth-child(3) .stat-icon { background: rgba(0,207,232,0.12); color: var(--info); }
+    .stat-card:nth-child(1) .stat-icon { background: rgba(115,103,240,0.12); color: var(--primary); }
+    .stat-card:nth-child(2) .stat-icon { background: rgba(40,199,111,0.12); color: var(--secondary); }
+    .stat-card:nth-child(3) .stat-icon { background: rgba(255,159,67,0.12); color: var(--warning); }
+    .stat-card:nth-child(4) .stat-icon { background: rgba(0,207,232,0.12); color: var(--info); }
 
     .stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); }
     .stat-label { font-size: 11px; color: var(--text-secondary); }
 
+    /* input section */
     .input-section {
       background: white;
       padding: 24px 28px;
@@ -307,6 +301,7 @@
 
     .action-buttons { display: flex; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
 
+    /* table */
     .table-container {
       background: white;
       border-radius: 20px;
@@ -328,49 +323,77 @@
     }
 
     .table-wrapper { overflow-x: auto; max-height: 440px; overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 1350px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1450px; }
     thead { background: #fafbfc; position: sticky; top: 0; }
     th {
-      padding: 14px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      text-align: left;
+      padding: 14px 12px; font-size: 11px; font-weight: 600;
+      color: var(--text-secondary); text-transform: uppercase; text-align: left;
       border-bottom: 2px solid var(--border);
     }
-    td {
-      padding: 14px 12px;
-      font-size: 13px;
-      border-bottom: 1px solid var(--border);
-    }
+    td { padding: 14px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
     tr:hover td { background: #fafbfc; }
 
     .action-btn {
-      padding: 5px 12px;
-      border-radius: 8px;
-      border: none;
-      font-size: 11px;
-      font-weight: 600;
-      background: #e8f0fe;
-      color: var(--primary);
-      cursor: pointer;
-      margin-right: 5px;
+      padding: 5px 12px; border-radius: 8px; border: none; font-size: 11px;
+      font-weight: 600; background: #e8f0fe; color: var(--primary); cursor: pointer; margin-right: 5px;
     }
     .action-btn.delete { background: #fee; color: var(--danger); }
 
+    /* Notes hover */
     .notes-badge {
-      background: #f1f0f8;
-      padding: 4px 12px;
-      border-radius: 30px;
-      font-size: 11px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--primary);
-      cursor: help;
+      background: #f1f0f8; padding: 4px 12px; border-radius: 30px;
+      font-size: 11px; display: inline-flex; align-items: center; gap: 6px; color: var(--primary);
+      cursor: default;
+    }
+    .notes-hover-container {
+      position: relative;
+      display: inline-block;
+    }
+    .notes-hover-container .notes-badge i {
+      pointer-events: none;
+    }
+    .notes-hover-container .hover-notes-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: 150%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e1e2d;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 400;
+      white-space: pre-wrap;
+      min-width: 200px;
+      max-width: 300px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.2);
+      z-index: 5000;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
+      line-height: 1.5;
+      word-break: break-word;
+      text-align: left;
+      backdrop-filter: blur(4px);
+    }
+    .notes-hover-container .hover-notes-text::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #1e1e2d transparent transparent transparent;
+    }
+    .notes-hover-container:hover .hover-notes-text {
+      visibility: visible;
+      opacity: 1;
     }
 
+    /* chart */
     .chart-section {
       background: white; border-radius: 20px; border: 1px solid var(--border);
       padding: 24px; margin-top: 20px;
@@ -383,6 +406,140 @@
     .chart-container { width: 280px; height: 280px; flex-shrink: 0; }
     .chart-stats { flex: 1; display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
     .stat-item { background: #fafbfc; padding: 14px; border-radius: 14px; border: 1px solid var(--border); }
+
+    /* modal styles */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 2000; 
+      left: 0; 
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.5); 
+      backdrop-filter: blur(5px);
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white; 
+      max-width: 900px; 
+      margin: 30px auto; 
+      border-radius: 24px;
+      padding: 32px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+      position: relative;
+      width: 95%;
+    }
+
+    .modal-header { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    
+    .modal-header h2 { 
+      color: var(--primary); 
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .close-modal { 
+      font-size: 32px; 
+      cursor: pointer; 
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    
+    .close-modal:hover {
+      color: var(--danger);
+    }
+
+    /* Edit modal grid layout */
+    .modal-form-grid { 
+      display: grid; 
+      grid-template-columns: repeat(4, 1fr); 
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .modal-input-group { 
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .modal-input-group.full { 
+      grid-column: span 4; 
+    }
+    
+    .modal-input-group label { 
+      font-size: 12px; 
+      font-weight: 600; 
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+    
+    .modal-input-group input, 
+    .modal-input-group textarea {
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 12px 16px; 
+      width: 100%;
+      background: #fafbfc;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    
+    .modal-input-group input:focus,
+    .modal-input-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(115,103,240,0.1);
+      background: white;
+    }
+
+    .modal-category-header {
+      grid-column: span 4;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 8px;
+      margin-bottom: 4px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-date-display {
+      background: #f0f4f8;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .modal-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .modal-input-group.full {
+        grid-column: span 2;
+      }
+    }
   </style>
 </head>
 <body>
@@ -390,22 +547,21 @@
   <div id="loginPage" class="login-container" style="display: flex;">
     <div class="login-card">
       <div class="login-header">
-        <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" alt="Prima Gul">
+        <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
         <p>Finance Manager</p>
       </div>
       <div class="login-form">
         <div class="input-field">
           <label><i class="far fa-user"></i> Username</label>
-          <input type="text" id="username" value="PrimaGul">
+          <input type="text" id="username" placeholder="PrimaGul" value="PrimaGul">
         </div>
         <div class="input-field">
           <label><i class="fas fa-lock"></i> Password</label>
-          <input type="password" id="password" value="itsprimagul2026">
+          <input type="password" id="password" placeholder="••••••••" value="itsprimagul2026">
         </div>
         <button class="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
       </div>
       <div class="login-footer">
-        <p>demo: PrimaGul / itsprimagul2026</p>
       </div>
     </div>
   </div>
@@ -413,69 +569,65 @@
   <!-- DASHBOARD -->
   <div id="dashboardApp" style="display: none;">
     <div class="container">
+      <!-- header with logout -->
       <div class="header">
         <div class="logo-section">
-          <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" alt="Prima Gul">
+          <img src="https://primagul.com/cdn/shop/files/WEBSITE_LOGO.png?v=1768211420&width=150" class="logo" alt="Prima Gul">
         </div>
         <div class="header-actions">
-          <div class="db-status" id="dbStatus">
-            <i class="fas fa-database"></i>
-            <span>Ready</span>
-          </div>
-          <button class="btn btn-success" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-          <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> Export</button>
+          <button class="btn" onclick="downloadExcel()"><i class="fas fa-file-excel" style="color:var(--primary);"></i> Export</button>
+          <button class="btn" onclick="backupToSupabase()"><i class="fas fa-cloud-upload-alt" style="color:var(--primary);"></i> Backup</button>
+          <button class="btn" onclick="restoreFromSupabase()"><i class="fas fa-cloud-download-alt" style="color:var(--primary);"></i> Restore</button>
           <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          <span id="syncStatus" class="sync-status">Auto-sync idle</span>
         </div>
       </div>
 
+      <!-- KPI cards -->
       <div class="card-grid">
-        <div class="stat-card">
-          <div class="stat-header"><h3>Total Credit</h3><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div>
-          <div class="stat-value" id="totalCredit">Rs 0</div>
-          <div class="stat-label">Incoming</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-header"><h3>Total Expenses</h3><div class="stat-icon"><i class="fas fa-receipt"></i></div></div>
-          <div class="stat-value" id="totalExpenses">Rs 0</div>
-          <div class="stat-label">Operational</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-header"><h3>Net Balance</h3><div class="stat-icon"><i class="fas fa-wallet"></i></div></div>
-          <div class="stat-value" id="balance">Rs 0</div>
-          <div class="stat-label">Available</div>
-        </div>
+        <div class="stat-card"><div class="stat-header"><h3>Total Debit</h3><div class="stat-icon"><i class="fas fa-arrow-up"></i></div></div><div class="stat-value" id="totalDebit">Rs 0</div><div class="stat-label">Outgoing</div></div>
+        <div class="stat-card"><div class="stat-header"><h3>Total Credit</h3><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div><div class="stat-value" id="totalCredit">Rs 0</div><div class="stat-label">Incoming</div></div>
+        <div class="stat-card"><div class="stat-header"><h3>Total Expenses</h3><div class="stat-icon"><i class="fas fa-receipt"></i></div></div><div class="stat-value" id="totalExpenses">Rs 0</div><div class="stat-label">Operational</div></div>
+        <div class="stat-card"><div class="stat-header"><h3>Net Balance</h3><div class="stat-icon"><i class="fas fa-wallet"></i></div></div><div class="stat-value" id="balance">Rs 0</div><div class="stat-label">Available</div></div>
       </div>
 
+      <!-- input form with fixed entity IDs -->
       <div class="input-section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Add New Transaction</div>
         <div class="form-grid">
-          <div class="input-group"><label>Date</label><input type="date" id="date"></div>
-          <div class="input-group"><label>Credit</label><input type="number" id="credit" value="0"></div>
-          <div class="input-group"><label>Factory</label><input type="number" id="factory" value="0"></div>
-          <div class="input-group"><label>Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
-          <div class="input-group"><label>Car Fuel</label><input type="number" id="carFuel" value="0"></div>
-          <div class="input-group"><label>Hasnain</label><input type="number" id="hasnain" value="0"></div>
-          <div class="input-group"><label>Guest Food</label><input type="number" id="guestFood" value="0"></div>
-          <div class="input-group"><label>Food</label><input type="number" id="food" value="0"></div>
-          <div class="input-group"><label>Salaries</label><input type="number" id="salaries" value="0"></div>
-          <div class="input-group"><label>Advance</label><input type="number" id="advance" value="0"></div>
-          <div class="input-group"><label>Bills</label><input type="number" id="bills" value="0"></div>
-          <div class="input-group"><label>Extra</label><input type="number" id="extra" value="0"></div>
-          <div class="input-group"><label>Charity</label><input type="number" id="charity" value="0"></div>
-          <div class="input-group"><label>Maintenance</label><input type="number" id="maintenance" value="0"></div>
-          <div class="input-group"><label>Shahzad</label><input type="number" id="shahzad" value="0"></div>
-          <div class="input-group"><label>Online Ads</label><input type="number" id="onlineAds" value="0"></div>
-          <div class="input-group" style="grid-column: span 2;"><label>Notes</label><textarea id="notes" rows="2"></textarea></div>
+          <div class="input-group"><label><i class="far fa-calendar"></i> Date</label><input type="date" id="date"></div>
+          <div class="input-group"><label><i class="fas fa-arrow-up" style="color:#ea5455;"></i> Debit</label><input type="number" id="debit" value="0"></div>
+          <div class="input-group"><label><i class="fas fa-arrow-down" style="color:#28c76f;"></i> Credit</label><input type="number" id="credit" value="0"></div>
+
+          <!-- 14 entities with correct IDs matching ENTITY_KEYS -->
+          <div class="input-group"><label>🏭 Factory</label><input type="number" id="factory" value="0"></div>
+          <div class="input-group"><label>⛽ Bike Fuel</label><input type="number" id="bikeFuel" value="0"></div>
+          <div class="input-group"><label>🚗 Car Fuel</label><input type="number" id="carFuel" value="0"></div>
+          <div class="input-group"><label>👤 Hasnain</label><input type="number" id="hasnain" value="0"></div>
+          <div class="input-group"><label>👤 Shahzad</label><input type="number" id="shahzad" value="0"></div>
+          <div class="input-group"><label>🍽️ Guest Food</label><input type="number" id="guestFood" value="0"></div>
+          <div class="input-group"><label>🍲 Food</label><input type="number" id="food" value="0"></div>
+          <div class="input-group"><label>💰 Salaries</label><input type="number" id="salaries" value="0"></div>
+          <div class="input-group"><label>⏩ Advance</label><input type="number" id="advance" value="0"></div>
+          <div class="input-group"><label>📄 Bills</label><input type="number" id="bills" value="0"></div>
+          <div class="input-group"><label>➕ Extra</label><input type="number" id="extra" value="0"></div>
+          <div class="input-group"><label>🤲 Charity</label><input type="number" id="charity" value="0"></div>
+          <div class="input-group"><label>🔧 Maintenance</label><input type="number" id="maintenance" value="0"></div>
+          <div class="input-group"><label>📱 Online Ads</label><input type="number" id="onlineAds" value="0"></div>
+
+          <div class="input-group" style="grid-column: span 2;"><label><i class="far fa-sticky-note"></i> Notes</label><textarea id="notes" rows="2" placeholder="Add details..."></textarea></div>
         </div>
+
         <div class="action-buttons">
-          <button class="btn btn-primary" onclick="addEntry()"><i class="fas fa-save"></i> Save Transaction</button>
+          <button class="btn btn-primary" onclick="addEntry()"><i class="fas fa-save"></i> Save</button>
           <div style="display: flex; gap: 10px;">
             <input type="date" id="deleteDate" style="padding:10px 16px; border-radius:12px; border:1px solid var(--border);">
-            <button class="btn btn-danger" onclick="deleteByDate()"><i class="fas fa-trash-alt"></i> Delete Date</button>
+            <button class="btn btn-danger" onclick="deleteByDate()"><i class="fas fa-trash-alt"></i> Delete</button>
           </div>
         </div>
       </div>
 
+      <!-- transaction table -->
       <div class="table-container">
         <div class="table-header">
           <h3><i class="fas fa-history"></i> Transaction History</h3>
@@ -485,9 +637,25 @@
           <table id="transactionTable">
             <thead>
               <tr>
-                <th>Date</th><th>Credit</th><th>Factory</th><th>Bike</th><th>Car</th><th>Hasnain</th>
-                <th>Guest</th><th>Food</th><th>Salaries</th><th>Advance</th><th>Bills</th><th>Extra</th>
-                <th>Charity</th><th>Maint</th><th>Shahzad</th><th>Ads</th><th>Notes</th><th>Actions</th>
+                <th>Date</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Factory</th>
+                <th>Bike Fuel</th>
+                <th>Car Fuel</th>
+                <th>Hasnain</th>
+                <th>Shahzad</th>
+                <th>Guest Food</th>
+                <th>Food</th>
+                <th>Salaries</th>
+                <th>Advance</th>
+                <th>Bills</th>
+                <th>Extra</th>
+                <th>Charity</th>
+                <th>Maintenance</th>
+                <th>Online Ads</th>
+                <th>Notes</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -495,6 +663,7 @@
         </div>
       </div>
 
+      <!-- chart section -->
       <div class="chart-section">
         <div class="chart-header">
           <h3><i class="fas fa-chart-pie"></i> Expense Distribution</h3>
@@ -506,281 +675,571 @@
         </div>
       </div>
     </div>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-edit"></i> Edit Transaction</h2>
+          <span class="close-modal" onclick="closeEditModal()">&times;</span>
+        </div>
+        
+        <div class="modal-date-display" id="modalDateDisplay">
+          Date: <span id="editDateDisplay"></span>
+        </div>
+
+        <div class="modal-form-grid" id="editModalFields">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+          <button class="btn" onclick="closeEditModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // ============================================
-    // SINGLE SCRIPT - NO DUPLICATES
-    // ============================================
-    
-    // Supabase Configuration
+    // ----- GLOBAL VARIABLES -----
+    const ENTITY_KEYS = [
+      'factory', 'bikeFuel', 'carFuel', 'hasnain', 'shahzad', 'guestFood', 'food', 
+      'salaries', 'advance', 'bills', 'extra', 'charity', 'maintenance', 'onlineAds'
+    ];
+
+    let data = [];
+    let chart;
+    let currentEditIndex = -1;
+    let syncIntervalId = null;
+
+    // ----- Supabase (optional backup) -----
+    // Supabase project settings (set these to your own project values)
+    // Note: The client-side app should only use the anon key + URL.
+    // The full Postgres connection URL (postgresql://...) is for server-side tools or direct DB access.
+    // Example (do not embed in browser JS):
+    // postgresql://postgres:[YOUR-PASSWORD]@db.oktfdaheerpamjbirlyn.supabase.co:5432/postgres
     const SUPABASE_URL = 'https://oktfdaheerpamjbirlyn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rdGZkYWhlZXJwYW1qYmlybHluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzEyMTQsImV4cCI6MjA4ODkwNzIxNH0.WPf_ub0MCazqPDf77SemD-k_-Rn0PXAo3dkFwR-jtAQ';
-    
-    // Initialize Supabase
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Constants
-    const ENTITY_KEYS = ['factory','bikeFuel','carFuel','hasnain','guestFood','food','salaries','advance','bills','extra','charity','maintenance','shahzad','onlineAds'];
-    
-    // State
-    let data = [];
-    let chart = null;
+    const supabaseClient = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    // ============================================
-    // LOGIN FUNCTION
-    // ============================================
-    window.handleLogin = function() {
+    function updateSyncStatus(message, isError = false) {
+      const statusEl = document.getElementById('syncStatus');
+      if (!statusEl) return;
+      statusEl.innerText = message;
+      statusEl.style.color = isError ? 'var(--danger)' : 'var(--text-secondary)';
+    }
+
+    async function syncToSupabase({ showAlert = false } = {}) {
+      if (!supabaseClient) {
+        if (showAlert) alert('Supabase client not found. Make sure the script is loaded.');
+        return;
+      }
+      if (SUPABASE_URL.includes('REPLACE') || SUPABASE_ANON_KEY.includes('REPLACE')) {
+        if (showAlert) alert('Please configure SUPABASE_URL and SUPABASE_ANON_KEY in the script before using Supabase.');
+        return;
+      }
+
+      try {
+        // Prefer using `date` as a unique key if the table has a corresponding constraint.
+        // Some Supabase/Postgres setups may not have a unique constraint on `date`, so
+        // fall back to the default primary-key based upsert behavior.
+        let error;
+        ({ error } = await supabaseClient
+          .from('transactions')
+          .upsert(data, { onConflict: 'date' }));
+
+        if (error && /unique or exclusion constraint/i.test(error.message || '')) {
+          // Fallback: try upserting without explicitly specifying `onConflict`.
+          // This will use the table's primary key (if defined) instead.
+          ({ error } = await supabaseClient.from('transactions').upsert(data));
+        }
+
+        if (error) throw error;
+        updateSyncStatus('Last sync: ' + new Date().toLocaleTimeString());
+        if (showAlert) alert('Backup completed to Supabase.');
+      } catch (err) {
+        console.error('Supabase sync error:', err);
+        const errMsg = err?.message || err;
+        updateSyncStatus('Sync error: ' + errMsg, true);
+        if (showAlert) alert('Backup failed: ' + errMsg);
+      }
+    }
+
+    function startAutoSyncInterval() {
+      if (syncIntervalId) return;
+      syncIntervalId = setInterval(() => syncToSupabase(), 5 * 60 * 1000);
+      updateSyncStatus('Auto-sync enabled (every 5 min)');
+    }
+
+    function stopAutoSyncInterval() {
+      if (!syncIntervalId) return;
+      clearInterval(syncIntervalId);
+      syncIntervalId = null;
+      updateSyncStatus('Auto-sync stopped');
+    }
+
+    async function backupToSupabase() {
+      await syncToSupabase({ showAlert: true });
+    }
+
+    async function restoreFromSupabase() {
+      if (!supabaseClient) return alert('Supabase client not found. Make sure the script is loaded.');
+      if (SUPABASE_URL.includes('REPLACE') || SUPABASE_ANON_KEY.includes('REPLACE')) {
+        return alert('Please configure SUPABASE_URL and SUPABASE_ANON_KEY in the script before using restore.');
+      }
+
+      try {
+        const { data: rows, error } = await supabaseClient
+          .from('transactions')
+          .select('*')
+          .order('date', { ascending: false });
+
+        if (error) throw error;
+        if (!Array.isArray(rows)) throw new Error('Unexpected Supabase response');
+
+        data = rows;
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        render();
+        alert('Data restored from Supabase.');
+      } catch (err) {
+        console.error('Supabase restore error:', err);
+        alert('Restore failed: ' + (err.message || err));
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const isLoggedIn = localStorage.getItem('primaGulLoggedIn') === 'true';
+      if (isLoggedIn) {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('dashboardApp').style.display = 'block';
+        loadData();
+        // Auto-sync on load
+        syncToSupabase();
+        startAutoSyncInterval();
+      }
+    });
+
+    // ----- LOGIN FUNCTIONS -----
+    function handleLogin() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
       if (username === 'PrimaGul' && password === 'itsprimagul2026') {
+        localStorage.setItem('primaGulLoggedIn', 'true');
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('dashboardApp').style.display = 'block';
-        localStorage.setItem('primaGulLoggedIn', 'true');
-        checkConnection();
         loadData();
+        // Auto-sync on login
+        syncToSupabase();
+        startAutoSyncInterval();
       } else {
-        alert('Invalid credentials');
-      }
-    };
-
-    // ============================================
-    // DATABASE FUNCTIONS
-    // ============================================
-    async function checkConnection() {
-      try {
-        const { error } = await supabase.from('transactions').select('count', { count: 'exact', head: true });
-        updateStatus(!error ? '✅ Connected' : '❌ Failed', !error);
-      } catch (e) {
-        updateStatus('❌ Connection Error', false);
+        alert('Invalid credentials (use PrimaGul / itsprimagul2026)');
       }
     }
 
-    async function loadData() {
-      try {
-        updateStatus('📡 Loading...', 'syncing');
-        const { data: transactions, error } = await supabase.from('transactions').select('*').order('date', { ascending: false });
-        if (error) throw error;
-        data = transactions || [];
-        updateStatus('✅ Connected', true);
-        render();
-      } catch (e) {
-        updateStatus('❌ Load Failed', false);
-      }
-    }
-
-    async function saveData(entry) {
-      try {
-        updateStatus('📤 Saving...', 'syncing');
-        const { error } = await supabase.from('transactions').insert([entry]);
-        if (error) throw error;
-        await loadData();
-        return true;
-      } catch (e) {
-        updateStatus('❌ Save Failed', false);
-        return false;
-      }
-    }
-
-    function updateStatus(text, isConnected) {
-      const el = document.getElementById('dbStatus');
-      if (isConnected === 'syncing') {
-        el.innerHTML = `<i class="fas fa-sync-alt fa-spin"></i> <span>${text}</span>`;
-        el.className = 'db-status syncing';
-      } else if (isConnected) {
-        el.innerHTML = `<i class="fas fa-database"></i> <span>${text}</span>`;
-        el.className = 'db-status connected';
-      } else {
-        el.innerHTML = `<i class="fas fa-database"></i> <span>${text}</span>`;
-        el.className = 'db-status error';
-      }
-    }
-
-    // ============================================
-    // CRUD OPERATIONS
-    // ============================================
-    window.addEntry = async function() {
-      const date = document.getElementById('date').value;
-      if (!date) return alert('Select a date');
-
-      const entry = {
-        date,
-        credit: +document.getElementById('credit').value || 0,
-        factory: +document.getElementById('factory').value || 0,
-        bike_fuel: +document.getElementById('bikeFuel').value || 0,
-        car_fuel: +document.getElementById('carFuel').value || 0,
-        hasnain: +document.getElementById('hasnain').value || 0,
-        guest_food: +document.getElementById('guestFood').value || 0,
-        food: +document.getElementById('food').value || 0,
-        salaries: +document.getElementById('salaries').value || 0,
-        advance: +document.getElementById('advance').value || 0,
-        bills: +document.getElementById('bills').value || 0,
-        extra: +document.getElementById('extra').value || 0,
-        charity: +document.getElementById('charity').value || 0,
-        maintenance: +document.getElementById('maintenance').value || 0,
-        shahzad: +document.getElementById('shahzad').value || 0,
-        online_ads: +document.getElementById('onlineAds').value || 0,
-        notes: document.getElementById('notes').value || ''
-      };
-
-      if (await saveData(entry)) {
-        document.getElementById('date').value = '';
-        document.getElementById('credit').value = 0;
-        ENTITY_KEYS.forEach(k => document.getElementById(k).value = 0);
-        document.getElementById('notes').value = '';
-      }
-    };
-
-    window.deleteRow = async function(id) {
-      if (!confirm('Delete?')) return;
-      try {
-        updateStatus('📤 Deleting...', 'syncing');
-        await supabase.from('transactions').delete().eq('id', id);
-        await loadData();
-      } catch (e) {
-        updateStatus('❌ Delete Failed', false);
-      }
-    };
-
-    window.deleteByDate = async function() {
-      const date = document.getElementById('deleteDate').value;
-      if (!date) return alert('Select date');
-      if (!confirm(`Delete all from ${date}?`)) return;
-      try {
-        updateStatus('📤 Deleting...', 'syncing');
-        await supabase.from('transactions').delete().eq('date', date);
-        await loadData();
-      } catch (e) {
-        updateStatus('❌ Delete Failed', false);
-      }
-    };
-
-    window.refreshData = loadData;
-
-    window.logout = function() {
+    function logout() {
       localStorage.removeItem('primaGulLoggedIn');
+      stopAutoSyncInterval();
       document.getElementById('loginPage').style.display = 'flex';
       document.getElementById('dashboardApp').style.display = 'none';
-    };
+    }
 
-    // ============================================
-    // RENDER FUNCTIONS
-    // ============================================
-    function formatPKR(n) { return 'Rs ' + n.toLocaleString('en-PK'); }
+    // ----- DATA PERSISTENCE -----
+    function loadData() {
+      const stored = localStorage.getItem('primaGulComplete');
+      if (stored) {
+        data = JSON.parse(stored);
+      } else {
+        // Sample data with proper entity mapping
+        const today = new Date().toISOString().split('T')[0];
+        const sample = { 
+          date: today, 
+          debit: 50000, 
+          credit: 200000, 
+          notes: 'Startup capital',
+          factory: 42000,
+          bikeFuel: 1500,
+          carFuel: 5000,
+          hasnain: 10000,
+          shahzad: 8000,
+          guestFood: 3000,
+          food: 6000,
+          salaries: 85000,
+          advance: 5000,
+          bills: 12000,
+          extra: 2000,
+          charity: 1000,
+          maintenance: 4000,
+          onlineAds: 52000
+        };
+        data = [sample];
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+      }
+      render();
+    }
 
+    function formatPKR(n) { 
+      return 'Rs ' + n.toLocaleString('en-PK'); 
+    }
+
+    // ----- RENDER DASHBOARD -----
     function render() {
       const tbody = document.getElementById('tableBody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      const totals = { credit: 0 };
+      const totals = { debit: 0, credit: 0 };
       ENTITY_KEYS.forEach(k => totals[k] = 0);
 
-      data.forEach(entry => {
-        totals.credit += entry.credit || 0;
-        totals.factory += entry.factory || 0;
-        totals.bikeFuel += entry.bike_fuel || 0;
-        totals.carFuel += entry.car_fuel || 0;
-        totals.hasnain += entry.hasnain || 0;
-        totals.guestFood += entry.guest_food || 0;
-        totals.food += entry.food || 0;
-        totals.salaries += entry.salaries || 0;
-        totals.advance += entry.advance || 0;
-        totals.bills += entry.bills || 0;
-        totals.extra += entry.extra || 0;
-        totals.charity += entry.charity || 0;
-        totals.maintenance += entry.maintenance || 0;
-        totals.shahzad += entry.shahzad || 0;
-        totals.onlineAds += entry.online_ads || 0;
+      // Sort by date descending
+      const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        const row = `
-          <tr>
-            <td>${new Date(entry.date).toLocaleDateString()}</td>
-            <td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>
-            <td>${entry.factory ? formatPKR(entry.factory) : '-'}</td>
-            <td>${entry.bike_fuel ? formatPKR(entry.bike_fuel) : '-'}</td>
-            <td>${entry.car_fuel ? formatPKR(entry.car_fuel) : '-'}</td>
-            <td>${entry.hasnain ? formatPKR(entry.hasnain) : '-'}</td>
-            <td>${entry.guest_food ? formatPKR(entry.guest_food) : '-'}</td>
-            <td>${entry.food ? formatPKR(entry.food) : '-'}</td>
-            <td>${entry.salaries ? formatPKR(entry.salaries) : '-'}</td>
-            <td>${entry.advance ? formatPKR(entry.advance) : '-'}</td>
-            <td>${entry.bills ? formatPKR(entry.bills) : '-'}</td>
-            <td>${entry.extra ? formatPKR(entry.extra) : '-'}</td>
-            <td>${entry.charity ? formatPKR(entry.charity) : '-'}</td>
-            <td>${entry.maintenance ? formatPKR(entry.maintenance) : '-'}</td>
-            <td>${entry.shahzad ? formatPKR(entry.shahzad) : '-'}</td>
-            <td>${entry.online_ads ? formatPKR(entry.online_ads) : '-'}</td>
-            <td>${entry.notes ? '📝' : '-'}</td>
-            <td><button class="action-btn delete" onclick="deleteRow(${entry.id})">Delete</button></td>
-          </tr>
-        `;
+      sorted.forEach((entry) => {
+        // Find original index
+        const originalIndex = data.findIndex(d => 
+          d.date === entry.date && 
+          d.debit === entry.debit && 
+          d.credit === entry.credit &&
+          d.notes === entry.notes &&
+          ENTITY_KEYS.every(k => d[k] === entry[k])
+        );
+
+        // Update totals
+        totals.debit += entry.debit || 0;
+        totals.credit += entry.credit || 0;
+        ENTITY_KEYS.forEach(k => totals[k] += (entry[k] || 0));
+
+        // Format date
+        const formattedDate = new Date(entry.date).toLocaleDateString('en-PK', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+
+        // Build table row
+        let row = `<tr><td>${formattedDate}</td>`;
+        row += `<td>${entry.debit ? formatPKR(entry.debit) : '-'}</td>`;
+        row += `<td>${entry.credit ? formatPKR(entry.credit) : '-'}</td>`;
+        
+        // Add all entity values
+        ENTITY_KEYS.forEach(k => {
+          row += `<td>${entry[k] ? formatPKR(entry[k]) : '-'}</td>`;
+        });
+
+        // Notes column with hover
+        if (entry.notes && entry.notes.trim() !== '') {
+          row += `<td><div class="notes-hover-container">
+                    <span class="notes-badge"><i class="far fa-sticky-note"></i> note</span>
+                    <span class="hover-notes-text">${entry.notes.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                  </div></td>`;
+        } else {
+          row += `<td>-</td>`;
+        }
+
+        // Actions
+        row += `<td>
+                  <button class="action-btn" onclick="openEditModal(${originalIndex})"><i class="fas fa-edit"></i> Edit</button>
+                  <button class="action-btn delete" onclick="deleteRow(${originalIndex})"><i class="fas fa-trash-alt"></i> Del</button>
+                </td></tr>`;
+        
         tbody.innerHTML += row;
       });
 
-      const totalExp = ENTITY_KEYS.reduce((acc, k) => acc + (totals[k] || 0), 0);
-      const balance = totals.credit - totalExp;
+      // Update KPI cards
+      const totalExpenses = ENTITY_KEYS.reduce((acc, k) => acc + (totals[k] || 0), 0);
+      const balance = totals.credit - totals.debit - totalExpenses;
 
+      document.getElementById('totalDebit').innerText = formatPKR(totals.debit);
       document.getElementById('totalCredit').innerText = formatPKR(totals.credit);
-      document.getElementById('totalExpenses').innerText = formatPKR(totalExp);
+      document.getElementById('totalExpenses').innerText = formatPKR(totalExpenses);
       document.getElementById('balance').innerText = (balance < 0 ? '-Rs ' : 'Rs ') + Math.abs(balance).toLocaleString('en-PK');
-      
+
+      // Update chart
       updateChart(totals);
     }
 
     function updateChart(totals) {
       const values = ENTITY_KEYS.map(k => totals[k] || 0);
-      const total = values.reduce((a,b) => a+b, 0);
-      const colors = ['#7367f0','#ff9f43','#28c76f','#ea5455','#00cfe8','#7367f0','#ff9f43','#28c76f','#ea5455','#00cfe8','#7367f0','#ff9f43','#28c76f','#ea5455'];
+      const total = values.reduce((a, b) => a + b, 0);
+      const colors = [
+        '#7367f0', '#ff9f43', '#28c76f', '#ea5455', '#00cfe8', 
+        '#7367f0', '#ff9f43', '#28c76f', '#ea5455', '#00cfe8',
+        '#7367f0', '#ff9f43', '#28c76f', '#ea5455'
+      ];
 
-      let legend = '', stats = '';
+      // Update legend and stats
+      let legendHtml = '', statsHtml = '';
       ENTITY_KEYS.forEach((k, i) => {
         const val = totals[k] || 0;
-        const pct = total > 0 ? (val/total*100).toFixed(1) : 0;
-        legend += `<div class="legend-item"><span class="legend-color" style="background:${colors[i]}"></span>${k}</div>`;
-        stats += `<div class="stat-item"><div>${k}</div><div><strong>${formatPKR(val)}</strong> (${pct}%)</div></div>`;
+        const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+        legendHtml += `<div class="legend-item">
+                        <span class="legend-color" style="background:${colors[i]}"></span>
+                        ${k}
+                       </div>`;
+        statsHtml += `<div class="stat-item">
+                        <div style="display:flex; gap:6px;">
+                          <span class="legend-color" style="background:${colors[i]}"></span> 
+                          ${k}
+                        </div>
+                        <div>
+                          <strong>${formatPKR(val)}</strong> 
+                          <span style="color:var(--text-secondary);">(${percent}%)</span>
+                        </div>
+                      </div>`;
       });
       
-      document.getElementById('chartLegend').innerHTML = legend;
-      document.getElementById('chartStats').innerHTML = stats;
+      document.getElementById('chartLegend').innerHTML = legendHtml;
+      document.getElementById('chartStats').innerHTML = statsHtml;
 
+      // Update chart
       if (chart) chart.destroy();
       const ctx = document.getElementById('expenseChart').getContext('2d');
       chart = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: ENTITY_KEYS, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
-        options: { cutout: '65%', plugins: { legend: { display: false } } }
+        data: { 
+          labels: ENTITY_KEYS, 
+          datasets: [{ 
+            data: values, 
+            backgroundColor: colors, 
+            borderWidth: 0, 
+            borderRadius: 6 
+          }] 
+        },
+        options: { 
+          cutout: '65%', 
+          plugins: { 
+            legend: { display: false },
+            tooltip: { 
+              callbacks: { 
+                label: (ctx) => {
+                  const val = ctx.raw;
+                  const percent = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                  return `${ctx.label}: ${formatPKR(val)} (${percent}%)`;
+                }
+              } 
+            } 
+          } 
+        }
       });
     }
 
-    // ============================================
-    // UTILITIES
-    // ============================================
-    window.filterTable = function() {
+    // ----- ADD NEW ENTRY -----
+    function addEntry() {
+      const date = document.getElementById('date').value;
+      if (!date) { 
+        alert('Please select a date'); 
+        return; 
+      }
+
+      // Create entry with all fields
+      const entry = { 
+        date: date,
+        debit: parseFloat(document.getElementById('debit').value) || 0,
+        credit: parseFloat(document.getElementById('credit').value) || 0,
+        notes: document.getElementById('notes').value || ''
+      };
+
+      // Add all entity values
+      ENTITY_KEYS.forEach(key => {
+        const element = document.getElementById(key);
+        entry[key] = element ? parseFloat(element.value) || 0 : 0;
+      });
+
+      // Add to data array
+      data.push(entry);
+      
+      // Save to localStorage
+      localStorage.setItem('primaGulComplete', JSON.stringify(data));
+
+      // Reset form
+      document.getElementById('date').value = '';
+      document.getElementById('debit').value = '0';
+      document.getElementById('credit').value = '0';
+      ENTITY_KEYS.forEach(key => {
+        const element = document.getElementById(key);
+        if (element) element.value = '0';
+      });
+      document.getElementById('notes').value = '';
+
+      // Re-render
+      render();
+
+      // Auto-backup
+      syncToSupabase();
+    }
+
+    // ----- EDIT MODAL FUNCTIONS -----
+    function openEditModal(index) {
+      currentEditIndex = index;
+      const entry = data[index];
+      
+      // Set date display
+      document.getElementById('editDateDisplay').innerText = new Date(entry.date).toLocaleDateString('en-PK', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+
+      // Build modal form
+      let html = `
+        <div class="modal-input-group">
+          <label>Debit</label>
+          <input type="number" id="editDebit" value="${entry.debit || 0}" step="1000">
+        </div>
+        <div class="modal-input-group">
+          <label>Credit</label>
+          <input type="number" id="editCredit" value="${entry.credit || 0}" step="1000">
+        </div>
+
+        <div class="modal-category-header">Factory & Fuel</div>
+        <div class="modal-input-group"><label>Factory</label><input type="number" id="edit_factory" value="${entry.factory || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Bike Fuel</label><input type="number" id="edit_bikeFuel" value="${entry.bikeFuel || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Car Fuel</label><input type="number" id="edit_carFuel" value="${entry.carFuel || 0}" step="1000"></div>
+
+        <div class="modal-category-header">Personnel</div>
+        <div class="modal-input-group"><label>Hasnain</label><input type="number" id="edit_hasnain" value="${entry.hasnain || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Shahzad</label><input type="number" id="edit_shahzad" value="${entry.shahzad || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Salaries</label><input type="number" id="edit_salaries" value="${entry.salaries || 0}" step="1000"></div>
+
+        <div class="modal-category-header">Food & Dining</div>
+        <div class="modal-input-group"><label>Guest Food</label><input type="number" id="edit_guestFood" value="${entry.guestFood || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Food</label><input type="number" id="edit_food" value="${entry.food || 0}" step="1000"></div>
+
+        <div class="modal-category-header">Operations</div>
+        <div class="modal-input-group"><label>Advance</label><input type="number" id="edit_advance" value="${entry.advance || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Bills</label><input type="number" id="edit_bills" value="${entry.bills || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Extra</label><input type="number" id="edit_extra" value="${entry.extra || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Maintenance</label><input type="number" id="edit_maintenance" value="${entry.maintenance || 0}" step="1000"></div>
+
+        <div class="modal-category-header">Other</div>
+        <div class="modal-input-group"><label>Charity</label><input type="number" id="edit_charity" value="${entry.charity || 0}" step="1000"></div>
+        <div class="modal-input-group"><label>Online Ads</label><input type="number" id="edit_onlineAds" value="${entry.onlineAds || 0}" step="1000"></div>
+
+        <div class="modal-input-group full">
+          <label>Notes</label>
+          <textarea id="editNotes" rows="3">${(entry.notes || '').replace(/</g, '&lt;')}</textarea>
+        </div>
+      `;
+
+      document.getElementById('editModalFields').innerHTML = html;
+      document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeEditModal() { 
+      document.getElementById('editModal').style.display = 'none'; 
+      currentEditIndex = -1; 
+    }
+
+    function saveEdit() {
+      if (currentEditIndex === -1) return;
+      
+      // Create updated entry
+      const updated = {
+        date: data[currentEditIndex].date, // Keep original date
+        debit: parseFloat(document.getElementById('editDebit').value) || 0,
+        credit: parseFloat(document.getElementById('editCredit').value) || 0,
+        notes: document.getElementById('editNotes').value || ''
+      };
+
+      // Add all entity values
+      ENTITY_KEYS.forEach(key => {
+        const element = document.getElementById(`edit_${key}`);
+        updated[key] = element ? parseFloat(element.value) || 0 : 0;
+      });
+
+      // Update data
+      data[currentEditIndex] = updated;
+      
+      // Save to localStorage
+      localStorage.setItem('primaGulComplete', JSON.stringify(data));
+      
+      // Close modal and re-render
+      closeEditModal();
+      render();
+
+      // Auto-backup
+      syncToSupabase();
+    }
+
+    // ----- DELETE FUNCTIONS -----
+    function deleteByDate() {
+      const delDate = document.getElementById('deleteDate').value;
+      if (!delDate) {
+        alert('Please select a date');
+        return;
+      }
+      
+      if (confirm(`Delete all transactions from ${delDate}?`)) {
+        data = data.filter(e => e.date !== delDate);
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        render();
+
+        // Auto-backup
+        syncToSupabase();
+      }
+    }
+
+    function deleteRow(index) {
+      if (confirm('Delete this entry?')) {
+        data.splice(index, 1);
+        localStorage.setItem('primaGulComplete', JSON.stringify(data));
+        render();
+
+        // Auto-backup
+        syncToSupabase();
+      }
+    }
+
+    // ----- FILTER TABLE -----
+    function filterTable() {
       const term = document.getElementById('searchInput').value.toLowerCase();
-      document.querySelectorAll('#tableBody tr').forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
+      const rows = document.querySelectorAll('#tableBody tr');
+      rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
       });
-    };
-
-    window.downloadExcel = function() {
-      const ws = XLSX.utils.json_to_sheet(data.map(e => ({
-        Date: e.date, Credit: e.credit, Factory: e.factory, BikeFuel: e.bike_fuel,
-        CarFuel: e.car_fuel, Hasnain: e.hasnain, GuestFood: e.guest_food, Food: e.food,
-        Salaries: e.salaries, Advance: e.advance, Bills: e.bills, Extra: e.extra,
-        Charity: e.charity, Maintenance: e.maintenance, Shahzad: e.shahzad,
-        OnlineAds: e.online_ads, Notes: e.notes
-      })));
-      XLSX.writeFile(XLSX.utils.book_new().then(b => { XLSX.utils.book_append_sheet(b, ws, 'PrimaGul'); return b; }), `PrimaGul_${new Date().toISOString().slice(0,10)}.xlsx`);
-    };
-
-    // Auto-login check
-    if (localStorage.getItem('primaGulLoggedIn') === 'true') {
-      document.getElementById('loginPage').style.display = 'none';
-      document.getElementById('dashboardApp').style.display = 'block';
-      setTimeout(() => { checkConnection(); loadData(); }, 100);
     }
+
+    // ----- EXPORT TO EXCEL -----
+    function downloadExcel() {
+      const excelData = data.map(e => {
+        const flat = { 
+          Date: e.date, 
+          Debit: e.debit, 
+          Credit: e.credit 
+        };
+        ENTITY_KEYS.forEach(k => flat[k] = e[k] || 0);
+        flat.Notes = e.notes || '';
+        return flat;
+      });
+      
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'PrimaGul');
+      XLSX.writeFile(wb, `PrimaGul_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+    // Make functions global
+    window.handleLogin = handleLogin;
+    window.logout = logout;
+    window.addEntry = addEntry;
+    window.deleteByDate = deleteByDate;
+    window.deleteRow = deleteRow;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.saveEdit = saveEdit;
+    window.filterTable = filterTable;
+    window.downloadExcel = downloadExcel;
+    window.backupToSupabase = backupToSupabase;
+    window.restoreFromSupabase = restoreFromSupabase;
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('editModal');
+      if (event.target === modal) {
+        closeEditModal();
+      }
+    };
   </script>
 </body>
 </html>
