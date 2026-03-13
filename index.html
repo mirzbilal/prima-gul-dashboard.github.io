@@ -712,6 +712,9 @@
     let currentEditIndex = -1;
     let syncIntervalId = null;
 
+    // Track columns that are missing in the Supabase schema and should be skipped on upload.
+    const supabaseIgnoredColumns = new Set();
+
     // ----- Supabase (optional backup) -----
     // Supabase project settings (set these to your own project values)
     // Note: The client-side app should only use the anon key + URL.
@@ -739,24 +742,62 @@
         return;
       }
 
+      // Build a payload that excludes any columns we know are missing in the schema.
+      const buildUploadPayload = () => {
+        return data.map(entry => {
+          const filtered = { ...entry };
+          supabaseIgnoredColumns.forEach(col => {
+            delete filtered[col];
+          });
+          return filtered;
+        });
+      };
+
       try {
         // Prefer using `date` as a unique key if the table has a corresponding constraint.
         // Some Supabase/Postgres setups may not have a unique constraint on `date`, so
         // fall back to the default primary-key based upsert behavior.
+        let uploadData = buildUploadPayload();
         let error;
-        ({ error } = await supabaseClient
-          .from('transactions')
-          .upsert(data, { onConflict: 'date' }));
+        let retryCount = 0;
+        const maxRetries = 5; // Limit retries to avoid infinite loops
 
-        if (error && /unique or exclusion constraint/i.test(error.message || '')) {
-          // Fallback: try upserting without explicitly specifying `onConflict`.
-          // This will use the table's primary key (if defined) instead.
-          ({ error } = await supabaseClient.from('transactions').upsert(data));
+        while (retryCount < maxRetries) {
+          ({ error } = await supabaseClient
+            .from('transactions')
+            .upsert(uploadData, { onConflict: 'date' }));
+
+          if (error && /unique or exclusion constraint/i.test(error.message || '')) {
+            // Fallback: try upserting without explicitly specifying `onConflict`.
+            // This will use the table's primary key (if defined) instead.
+            ({ error } = await supabaseClient.from('transactions').upsert(uploadData));
+          }
+
+          if (!error) break; // Success
+
+          // If the schema is missing a column, record it and retry.
+          const match = (error.message || '').match(/Could not find the '(.+?)' column/i);
+          if (match && match[1]) {
+            const missingCol = match[1];
+            supabaseIgnoredColumns.add(missingCol);
+            console.warn('Supabase schema missing column, ignoring:', missingCol);
+            uploadData = buildUploadPayload(); // Rebuild payload without the new missing column
+            retryCount++;
+          } else {
+            break; // Not a missing column error, stop retrying
+          }
         }
 
         if (error) throw error;
+
         updateSyncStatus('Last sync: ' + new Date().toLocaleTimeString());
-        if (showAlert) alert('Backup completed to Supabase.');
+        if (showAlert) {
+          const ignored = Array.from(supabaseIgnoredColumns);
+          const msg = ignored.length > 0
+            ? `Backup completed to Supabase. (ignored missing columns: ${ignored.join(', ')})`
+            : 'Backup completed to Supabase.';
+          alert(msg);
+        }
       } catch (err) {
         console.error('Supabase sync error:', err);
         const errMsg = err?.message || err;
